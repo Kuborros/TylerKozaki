@@ -51,18 +51,15 @@ namespace TylerKozaki.Patches
 
         internal static void Action_Tyler_AirMoves()
         {
-            if (player.input.jumpPress && player.velocity.y < player.jumpStrength && !player.jumpAbilityFlag && player.targetWaterSurface == null)
+            if (player.input.jumpPress && player.velocity.y < player.jumpStrength && !player.jumpAbilityFlag && player.targetWaterSurface == null && !(player.onGround || player.onGrindRail))
             {
                 player.jumpAbilityFlag = true;
                 player.velocity.y = Mathf.Max(player.jumpStrength * jumpMultiplier, player.velocity.y);
-                player.state = new FPObjectState(player.State_InAir);
-                player.SetPlayerAnimation("DoubleJump", new float?(0f), new float?(0f), true, true);
+                player.state = new FPObjectState(State_Tyler_TailSpin);
+                player.SetPlayerAnimation("TailSpin", new float?(0f), new float?(0f), true, true);
                 player.genericTimer = 0f;
                 player.jumpReleaseFlag = true;
                 player.Action_PlaySoundUninterruptable(player.sfxDoubleJump);
-                WhiteBurst whiteBurst = (WhiteBurst)FPStage.CreateStageObject(WhiteBurst.classID, player.position.x, player.position.y - 24f);
-                whiteBurst.scale.x = 1.5f;
-                whiteBurst.scale.y = 0.3f;
             }
             else if ((player.guardTime <= 0f || player.cancellableGuard) && (player.input.guardPress || (guardBuffer > 0f && player.input.guardHold)))
             {
@@ -288,7 +285,7 @@ namespace TylerKozaki.Patches
             }
         }
 
-        internal void State_Tyler_TailSpin()
+        internal static void State_Tyler_TailSpin()
         {
             if (player.onGround)
             {

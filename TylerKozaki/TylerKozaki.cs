@@ -29,9 +29,8 @@ namespace TylerKozaki
 
             string assetPath = Path.Combine(Path.GetFullPath("."), "mod_overrides\\TylerMod");
             dataBundle = AssetBundle.LoadFromFile(Path.Combine(assetPath, "playabletyler.assets"));
-            //tutorialScene = AssetBundle.LoadFromFile(Path.Combine(assetPath, "tutorialtyler.scene"));
 
-            if (dataBundle == null) //|| tutorialScene == null)
+            if (dataBundle == null)
             {
                 logSource.LogError("Failed to load AssetBundles! This mod cannot work without them, exiting. Please reinstall it.");
                 return;

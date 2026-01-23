@@ -36,7 +36,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Folder Include="Objects\" />
     <Folder Include="Patches\" />
   </ItemGroup>
 </Project>
