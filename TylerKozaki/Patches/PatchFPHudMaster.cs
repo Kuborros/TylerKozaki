@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using System.ComponentModel.Design;
 using UnityEngine;
 
 namespace TylerKozaki.Patches
@@ -68,45 +69,47 @@ namespace TylerKozaki.Patches
                 return;
             }
 
-            string text = "Jump";
-            string text2 = "Single Shot";
-            string text3 = "<c=energy>Wing Special</c>";
-            string text4 = "Guard";
+            string jumpText = "Jump";
+            string basicAttackText = "Attack";
+            string specialAttackText = "<c=black>Kunai Throw</c>";
+            string guardText = "Guard";
 
             if (player.IsKOd(false))
             {
-                text = "-";
-                text2 = "-";
-                text3 = "-";
-                text4 = "-";
+                jumpText = "-";
+                basicAttackText = "-";
+                specialAttackText = "-";
+                guardText = "-";
+            }
+
+            //Kunai throw and it's variants.
+            if (player.energy > 0)
+            {
+                if (!PatchFPPlayer.burnoutState)
+                {
+                    if (PatchFPPlayer.throwCharge < 12.5)
+                    {
+                        specialAttackText = "<c=black>Kunai Throw</c>";
+                    }
+                    else if (PatchFPPlayer.throwCharge < 25)
+                    {
+                        specialAttackText = "<c=black>Umbral Blade</c>";
+                    }
+                    else if (PatchFPPlayer.throwCharge >= 25)
+                    {
+                        specialAttackText = "<c=black>Eclipse Orb</c>";
+                    }
+                }
+                else
+                {
+                    specialAttackText = "<j><c=red>Burnout</c></j>";
+                }
             }
 
             //Mid-air
             if (!player.onGround && player.state != new FPObjectState(player.State_LadderClimb))
             {
-                text = "Double Jump";
-                if (player.state != new FPObjectState(player.State_Ball) && player.state != new FPObjectState(player.State_Ball_Physics) && player.state != new FPObjectState(player.State_Ball_Vulnerable))
-                {
-                    if (player.input.left || player.input.right)
-                    {
-                        text3 = "<c=energy>Wing Smash</c>";
-                    }
-                    else if (player.input.up || player.input.down)
-                    {
-                        text3 = "<c=energy>Gravity Boots</c>";
-                    }
-                    else
-                        text3 = "<c=energy>-</c>";
-                }
-                if (!player.input.attackHold)
-                {
-                    text2 = "Single Shot";
-                }
-                else
-                {
-                    text2 = "<c=energy>(Hold) Charge Shot</c>";
-                }
-
+                jumpText = "Tail Spin";
             }
 
             //On the ground, excluding funky states
@@ -114,54 +117,43 @@ namespace TylerKozaki.Patches
             {
                 if (player.input.down)
                 {
-                    text2 = "Crouch shot";
-                }
-                else
-                {
-                    if (!player.input.attackHold)
-                    {
-                        text2 = "Single Shot";
-                    }
-                    else
-                    {
-                        text2 = "<c=energy>(Hold) Charge Shot</c>";
-                    }
-                }
-                if (player.input.up && !player.input.down)
-                {
-                    text3 = "<c=energy>Gravity Boots</c>";
-                }
-                if (player.onGround)
-                {
-                    text3 = "<c=energy>-</c>";
+                    basicAttackText = "Crouch Attack";
                 }
             }
 
+            //Blink mode, no attacks allowed
+            if (PatchFPPlayer.blinkState)
+            {
+                basicAttackText = "-";
+                specialAttackText = "-";
+            }
+
+
             if (player.displayMoveJump != string.Empty)
             {
-                text = player.displayMoveJump;
+                jumpText = player.displayMoveJump;
             }
             if (player.displayMoveAttack != string.Empty)
             {
-                text2 = player.displayMoveAttack;
+                basicAttackText = player.displayMoveAttack;
             }
             if (player.displayMoveSpecial != string.Empty)
             {
-                text3 = player.displayMoveSpecial;
+                specialAttackText = player.displayMoveSpecial;
             }
             if (player.displayMoveGuard != string.Empty)
             {
-                text4 = player.displayMoveGuard;
+                guardText = player.displayMoveGuard;
             }
             __instance.hudGuide.text = string.Concat(new string[]
             {
-            text,
+            jumpText,
             "\n",
-            text2,
+            basicAttackText,
             "\n",
-            text3,
+            specialAttackText,
             "\n",
-            text4,
+            guardText,
             "\n "
             });
         }

@@ -114,6 +114,7 @@ namespace TylerKozaki
 
             Harmony harmony = new Harmony("com.kuborro.plugins.fp2.playabletyler");
             harmony.PatchAll(typeof(PatchAnimatorPreInitializer));
+            harmony.PatchAll(typeof(PatchFPEventSequence));
             harmony.PatchAll(typeof(PatchFPHudMaster));
             harmony.PatchAll(typeof(PatchFPPlayer));
             harmony.PatchAll(typeof(PatchFPResultsMenu));

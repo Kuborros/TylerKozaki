@@ -184,6 +184,69 @@ namespace TylerKozaki.Objects
             cannotBeFrozen = false;
         }
 
+        private void Update()
+        {
+            if (!FPStage.objectsRegistered)
+            {
+                return;
+            }
+            PlayerBossUpdate();
+            if (targetPlayer == null)
+            {
+                targetPlayer = FPStage.FindNearestPlayer(this, 100000f);
+            }
+            if (state == new FPObjectState(base.State_Init))
+            {
+                SetPlayerAnimation("Jumping", 0.5f, 0.5f);
+                if (!bossActivated)
+                {
+                    state = State_Default;
+                }
+                else
+                {
+                    state = State_Running;
+                }
+            }
+            else if (state == new FPObjectState(base.State_Guard))
+            {
+                CheckBoundaries();
+                Process360Movement();
+            }
+            if (!(state != new FPObjectState(State_Frozen)) || !(state != new FPObjectState(base.State_KO)))
+            {
+                return;
+            }
+            if (onGround)
+            {
+                attackKnockback.x = groundVel * 0.5f;
+            }
+            else
+            {
+                attackKnockback.x = velocity.x * 0.5f;
+            }
+            attackKnockback.y = velocity.y * 0.5f;
+            if (!FPStage.ConfirmClassWithPoolTypeID(typeof(FPPlayer), FPPlayer.classID))
+            {
+                return;
+            }
+            FPBaseObject objRef = null;
+            while (FPStage.ForEach(FPPlayer.classID, ref objRef))
+            {
+                FPPlayer fPPlayer = (FPPlayer)objRef;
+                if (fPPlayer.invincibilityTime <= 0f && faction != fPPlayer.faction && FPCollision.CheckOOBB(this, hbAttack, objRef, fPPlayer.hbTouch))
+                {
+                    if (fPPlayer.guardTime <= 15f)
+                    {
+                        fPPlayer.hitStun = 4f;
+                    }
+                    fPPlayer.hurtKnockbackX = attackKnockback.x;
+                    fPPlayer.hurtKnockbackY = attackKnockback.y;
+                    fPPlayer.healthDamage += 0.5f;
+                    fPPlayer.Action_HitSpark(this);
+                }
+            }
+        }
+
         private new void LateUpdate()
         {
             if (FPStage.objectsRegistered)
@@ -473,69 +536,6 @@ namespace TylerKozaki.Objects
                 genericTimer += FPStage.deltaTime;
             }
             CheckBoundaries();
-        }
-
-        private void Update()
-        {
-            if (!FPStage.objectsRegistered)
-            {
-                return;
-            }
-            PlayerBossUpdate();
-            if (targetPlayer == null)
-            {
-                targetPlayer = FPStage.FindNearestPlayer(this, 100000f);
-            }
-            if (state == new FPObjectState(base.State_Init))
-            {
-                SetPlayerAnimation("Jumping", 0.5f, 0.5f);
-                if (!bossActivated)
-                {
-                    state = State_Default;
-                }
-                else
-                {
-                    state = State_Running;
-                }
-            }
-            else if (state == new FPObjectState(base.State_Guard))
-            {
-                CheckBoundaries();
-                Process360Movement();
-            }
-            if (!(state != new FPObjectState(State_Frozen)) || !(state != new FPObjectState(base.State_KO)))
-            {
-                return;
-            }
-            if (onGround)
-            {
-                attackKnockback.x = groundVel * 0.5f;
-            }
-            else
-            {
-                attackKnockback.x = velocity.x * 0.5f;
-            }
-            attackKnockback.y = velocity.y * 0.5f;
-            if (!FPStage.ConfirmClassWithPoolTypeID(typeof(FPPlayer), FPPlayer.classID))
-            {
-                return;
-            }
-            FPBaseObject objRef = null;
-            while (FPStage.ForEach(FPPlayer.classID, ref objRef))
-            {
-                FPPlayer fPPlayer = (FPPlayer)objRef;
-                if (fPPlayer.invincibilityTime <= 0f && faction != fPPlayer.faction && FPCollision.CheckOOBB(this, hbAttack, objRef, fPPlayer.hbTouch))
-                {
-                    if (fPPlayer.guardTime <= 15f)
-                    {
-                        fPPlayer.hitStun = 4f;
-                    }
-                    fPPlayer.hurtKnockbackX = attackKnockback.x;
-                    fPPlayer.hurtKnockbackY = attackKnockback.y;
-                    fPPlayer.healthDamage += 0.5f;
-                    fPPlayer.Action_HitSpark(this);
-                }
-            }
         }
     }
 
