@@ -6,6 +6,7 @@ using FP2Lib.Player;
 using FP2Lib.Vinyl;
 using HarmonyLib;
 using System.IO;
+using System.Linq;
 using TylerKozaki.Patches;
 using UnityEngine;
 
@@ -27,8 +28,8 @@ namespace TylerKozaki
             // Plugin startup logic
             logSource = base.Logger;
 
-            string assetPath = Path.Combine(Path.GetFullPath("."), "mod_overrides\\TylerMod");
-            dataBundle = AssetBundle.LoadFromFile(Path.Combine(assetPath, "playabletyler.assets"));
+            string assetPath = Path.Combine(Path.GetFullPath("."), "mod_overrides\\TylerKozaki");
+            dataBundle = AssetBundle.LoadFromFile(Path.Combine(assetPath, "tylerKozaki.assets"));
 
             if (dataBundle == null)
             {
@@ -45,19 +46,36 @@ namespace TylerKozaki
             VinylHandler.RegisterVinyl("kubo.m_theme_tyler", "Tyler's Theme", tylerTheme, VAddToShop.Fawnstar);
 
             //Add Badges
-            BadgeHandler.RegisterBadge("kubo.tylerrunner", "Shade Runner", "Beat any stage's par time as Tyler.", null, FPBadgeType.SILVER);
-            BadgeHandler.RegisterBadge("kubo.tylerspeedrunner", "Shadow Speedrunner", "Beat any stage as Tyler in less than half of the par time.", null, FPBadgeType.SILVER);
-            BadgeHandler.RegisterBadge("kubo.tylermaster", "Umbral Master", "Beat the par times in all stages as Tyler.", null, FPBadgeType.GOLD);
-            BadgeHandler.RegisterBadge("kubo.tylercomplete", "Avalice’s Own War Dog", "Finish the game as Tyler.", null, FPBadgeType.GOLD);
+            BadgeHandler.RegisterBadge("kubo.tylerrunner", "Shade Runner", "Beat any stage's par time as Tyler.", dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's badges")[4], FPBadgeType.SILVER);
+            BadgeHandler.RegisterBadge("kubo.tylerspeedrunner", "Shadow Speedrunner", "Beat any stage as Tyler in less than half of the par time.", dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's badges")[5], FPBadgeType.SILVER);
+            BadgeHandler.RegisterBadge("kubo.tylermaster", "Umbral Master", "Beat the par times in all stages as Tyler.", dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's badges")[6], FPBadgeType.GOLD);
+            BadgeHandler.RegisterBadge("kubo.tylercomplete", "Avalice’s Own War Dog", "Finish the game as Tyler.", dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's badges")[7], FPBadgeType.GOLD);
 
-            BadgeHandler.RegisterBadge("kubo.tylertailkill", "Eat my Tail", "Beat a boss with Umbral Tail Spin.", null, FPBadgeType.GOLD);
-            BadgeHandler.RegisterBadge("kubo.tylershadowkill", "Shadow Arts", "Beat a boss with Umbral Throw special (Kunai, Blade, or Eclipse Bomb).", null, FPBadgeType.GOLD);
-            BadgeHandler.RegisterBadge("kubo.tylerboostkill", "Howling Shadows", "Beat a boss with umbral boost or the umbral boost overdrive.", null, FPBadgeType.GOLD);
+            BadgeHandler.RegisterBadge("kubo.tylertailkill", "Eat my Tail", "Beat a boss with Umbral Tail Spin.", dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's badges")[2], FPBadgeType.GOLD);
+            BadgeHandler.RegisterBadge("kubo.tylershadowkill", "Shadow Arts", "Beat a boss with Umbral Throw special (Kunai, Blade, or Eclipse Bomb).", dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's badges")[1], FPBadgeType.GOLD);
+            BadgeHandler.RegisterBadge("kubo.tylerboostkill", "Howling Shadows", "Beat a boss with umbral boost or the umbral boost overdrive.", dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's badges")[0], FPBadgeType.GOLD);
 
             //Add Items
-            ItemHandler.RegisterItem("kubo.tylermemento", "Kozaki Family Bracelet", null, "A priceless heirloom passed down from Tyler's family.\nThe item grants him a second chance during a stage.\nDespite the odds, he shall endure.", IAddToShop.None,0,0,0);
+
+
+            ItemHandler.RegisterItem("kubo.tylermemento", "Kozaki Family Bracelet", dataBundle.LoadAsset<Sprite>("Wolf dragon pendent"), "A priceless heirloom passed down from Tyler's family.\nThe item grants him a second chance during a stage.\nDespite the odds, he shall endure.", IAddToShop.None,0,0,0);
             familyBraceletID = (FPPowerup)ItemHandler.GetItemDataByUid("kubo.tylermemento").itemID;
-            
+
+
+            //Some special cases
+            Sprite[] worldMapIdle = [null];
+            Sprite[] worldMapWalk = [null];
+            Sprite[] worldMapAnims = dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's adventure mode chibi");
+
+            if (worldMapAnims != null && worldMapAnims.Length > 7)
+            {
+                worldMapIdle = [.. worldMapAnims.Take(7)];
+                worldMapWalk = [.. worldMapAnims.Skip(7)];
+            }
+
+            MenuPhotoPose menuPhotoPose = new MenuPhotoPose();
+            menuPhotoPose.groundSprites = dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's photo mode");
+            menuPhotoPose.airSprites = dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's air Photo mode");
 
             //Load character select object
             PlayableChara tylerChar = new PlayableChara()
@@ -66,9 +84,9 @@ namespace TylerKozaki
                 Name = "Tyler",
                 TutorialScene = "Tutorial1",
                 characterType = "SHADOW Type",
-                skill1 = "Fly",
-                skill2 = "Double Jump",
-                skill3 = "Shoot",
+                skill1 = "Umbral Boost",
+                skill2 = "Tail Spin",
+                skill3 = "Attack",
                 skill4 = "Guard",
                 airshipSprite = 1,
                 useOwnCutsceneActivators = false,
@@ -81,24 +99,26 @@ namespace TylerKozaki
                 Gender = CharacterGender.MALE,
                 element = CharacterElement.FIRE,
                 powerupStartDescription = "Start the stage with your Family Bracelet ready.",
-                profilePic = dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler_Profile")[0],
-                keyArtSprite = dataBundle.LoadAsset<Sprite>("Tyler_KeyArt"),
-                endingKeyArtSprite = dataBundle.LoadAsset<Sprite>("Tyler_EndingArt"),
-                charSelectName = dataBundle.LoadAsset<Sprite>("Tyler-File-Select"),
-                piedSprite = (Sprite)dataBundle.LoadAssetWithSubAssets("Tyler_Pie")[0],
-                piedHurtSprite = (Sprite)dataBundle.LoadAssetWithSubAssets("Tyler_Pie")[1],
-                itemFuel = dataBundle.LoadAsset<Sprite>("ItemFuelCrystal"),
-                worldMapPauseSprite = dataBundle.LoadAsset<Sprite>("tyler_Pause"),
-                zaoBaseballSprite = dataBundle.LoadAsset<Sprite>("TylerZLBall"),
-                livesIconAnim = dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler_Stock"),
+                profilePic = dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's dialogue box icon")[0],
+                keyArtSprite = dataBundle.LoadAssetWithSubAssets<Sprite>("character select and game clear")[0],
+                endingKeyArtSprite = dataBundle.LoadAssetWithSubAssets<Sprite>("character select and game clear")[1],
+                charSelectName = dataBundle.LoadAsset<Sprite>("Tylers_character_select_name"),
+                piedSprite = dataBundle.LoadAsset<Sprite>("Tyler's stuck in pie"),
+                piedHurtSprite = dataBundle.LoadAsset<Sprite>("Tyler's pie break"),
+                itemFuel = dataBundle.LoadAssetWithSubAssets<Sprite>("Family bracelet final")[0],
+                worldMapPauseSprite = dataBundle.LoadAsset<Sprite>("TylerPauseIdle"),
+                zaoBaseballSprite = dataBundle.LoadAsset<Sprite>("Tyler's baseball hold on sprite"),
+                livesIconAnim = dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's lifes counter icon"),
                 sagaBlock = dataBundle.LoadAsset<RuntimeAnimatorController>("SagaTyler"),
                 sagaBlockSyntax = dataBundle.LoadAsset<RuntimeAnimatorController>("Saga2Tyler"),
+                worldMapIdle = worldMapIdle,
+                worldMapWalk = worldMapWalk,
                 resultsTrack = tylerClear,
                 endingTrack = tylerTheme,
                 playerBoss = null,
-                menuPhotoPose = new MenuPhotoPose(),
+                menuPhotoPose = menuPhotoPose,
                 characterSelectPrefab = dataBundle.LoadAsset<GameObject>("Menu CS Character Tyler"),
-                menuInstructionPrefab = dataBundle.LoadAsset<GameObject>("MenuInstructionsTyler"),
+                menuInstructionPrefab = null,//dataBundle.LoadAsset<GameObject>("MenuInstructionsTyler"),
                 prefab = dataBundle.LoadAsset<GameObject>("Player Tyler"),
                 dataBundle = dataBundle
             };

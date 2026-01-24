@@ -44,6 +44,8 @@ namespace TylerKozaki.Patches
         private static RuntimeAnimatorController bladeThrowProjectile;
         private static RuntimeAnimatorController umbralBombProjectile;
 
+        private static RuntimeAnimatorController darkSparkle;
+
         internal static readonly MethodInfo m_AirMoves = SymbolExtensions.GetMethodInfo(() => Action_Tyler_AirMoves());
         internal static readonly MethodInfo m_FuelPickup = SymbolExtensions.GetMethodInfo(() => Action_Tyler_FuelPickup());
         internal static readonly MethodInfo m_GroundMoves = SymbolExtensions.GetMethodInfo(() => Action_Tyler_GroundMoves());
@@ -162,7 +164,7 @@ namespace TylerKozaki.Patches
                     player.SetPlayerAnimation("HairWhip1");
                     player.nextAttack = 2;
                 }
-                //state = State_Lilac_HairWhip;
+                player.state = State_Tyler_Kick;
                 player.Action_StopSound();
                 combo = false;
 
@@ -443,7 +445,7 @@ namespace TylerKozaki.Patches
                 player.state = player.State_InAir;
                 player.SetPlayerAnimation("Jumping", 0f, 0f);
                 //Tyler "Jump 1/2" lines go here
-                player.audioChannel[0].PlayOneShot(player.vaSpecialA[UnityEngine.Random.Range(0, player.vaSpecialA.Length)]);
+                player.audioChannel[0].PlayOneShot(player.vaExtra[UnityEngine.Random.Range(0, 1)]);
             }
             //On ground somehow, while also wall clinging. Force grounded state
             else if (player.onGround)
@@ -489,6 +491,7 @@ namespace TylerKozaki.Patches
                 }
                 RotatePlayerUpright(player);
                 Action_Tyler_AirMoves();
+                player.Process360Movement();
             }
             if (Mathf.Repeat(player.genericTimer, 8f) < 1f)
             {
@@ -717,7 +720,7 @@ namespace TylerKozaki.Patches
                 }
 
                 //Load projectile animations
-
+                darkSparkle = TylerKozaki.dataBundle.LoadAsset<RuntimeAnimatorController>("DarkSpark");
 
                 //Start with the bracelet when the item is equipped
                 if (__instance.powerups.Contains(TylerKozaki.familyBraceletID))
