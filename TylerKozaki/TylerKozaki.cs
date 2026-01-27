@@ -58,8 +58,8 @@ namespace TylerKozaki
             //Add Items
 
 
-            ItemHandler.RegisterItem("kubo.tylermemento", "Kozaki Family Bracelet", dataBundle.LoadAsset<Sprite>("Wolf dragon pendent"), "A priceless heirloom passed down from Tyler's family.\nThe item grants him a second chance during a stage.\nDespite the odds, he shall endure.", IAddToShop.None,0,0,0);
-            familyBraceletID = (FPPowerup)ItemHandler.GetItemDataByUid("kubo.tylermemento").itemID;
+            //ItemHandler.RegisterItem("kubo.tylermemento", "Kozaki Family Bracelet", dataBundle.LoadAsset<Sprite>("Wolf dragon pendent"), "", IAddToShop.None,0,0,0);
+            //familyBraceletID = (FPPowerup)ItemHandler.GetItemDataByUid("kubo.tylermemento").itemID;
 
 
             //Some special cases
@@ -98,14 +98,14 @@ namespace TylerKozaki
                 eventActivatorCharacter = FPCharacterID.LILAC,
                 Gender = CharacterGender.MALE,
                 element = CharacterElement.FIRE,
-                powerupStartDescription = "Start the stage with your Family Bracelet ready.",
+                powerupStartDescription = "A priceless heirloom passed down from Tyler's family.\nThe item grants him a second chance during a stage.",
                 profilePic = dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's dialogue box icon")[0],
                 keyArtSprite = dataBundle.LoadAssetWithSubAssets<Sprite>("character select and game clear")[0],
                 endingKeyArtSprite = dataBundle.LoadAssetWithSubAssets<Sprite>("character select and game clear")[1],
                 charSelectName = dataBundle.LoadAsset<Sprite>("Tylers_character_select_name"),
                 piedSprite = dataBundle.LoadAsset<Sprite>("Tyler's stuck in pie"),
                 piedHurtSprite = dataBundle.LoadAsset<Sprite>("Tyler's pie break"),
-                itemFuel = dataBundle.LoadAssetWithSubAssets<Sprite>("Family bracelet final")[0],
+                itemFuel = dataBundle.LoadAsset<Sprite>("Wolf dragon pendent"),
                 worldMapPauseSprite = dataBundle.LoadAsset<Sprite>("TylerPauseIdle"),
                 zaoBaseballSprite = dataBundle.LoadAsset<Sprite>("Tyler's baseball hold on sprite"),
                 livesIconAnim = dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's lifes counter icon"),

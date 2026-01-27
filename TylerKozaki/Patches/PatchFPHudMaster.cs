@@ -1,64 +1,64 @@
 ﻿using HarmonyLib;
-using System.ComponentModel.Design;
 using UnityEngine;
 
 namespace TylerKozaki.Patches
 {
     internal class PatchFPHudMaster
     {
+        internal static GameObject familyBraceletIcon;
+        internal static GameObject overChargeBar;
+
         [HarmonyPrefix]
         [HarmonyPatch(typeof(FPHudMaster), "Start", MethodType.Normal)]
-        static void PatchFPHudMasterStart(ref GameObject ___pfHudBase, ref GameObject ___pfHudEnergyIcon, ref GameObject ___pfHudEnergyBar)
+        static void PatchFPHudMasterStart(FPHudMaster __instance, ref GameObject ___pfHudBase, ref GameObject ___pfHudEnergyIcon, ref GameObject ___pfHudEnergyBar, ref GameObject ___pfHudLifePetal)
         {
             if (FPSaveManager.character == TylerKozaki.currentTylerID)
             {
                 ___pfHudBase = TylerKozaki.dataBundle.LoadAsset<GameObject>("Hud Base Tyler");
                 ___pfHudEnergyIcon = TylerKozaki.dataBundle.LoadAsset<GameObject>("Hud Energy Icon Tyler");
                 ___pfHudEnergyBar = TylerKozaki.dataBundle.LoadAsset<GameObject>("Hud Energy Bar Tyler");
+                ___pfHudLifePetal = TylerKozaki.dataBundle.LoadAsset<GameObject>("Hud Life Petal Tyler");
+
+                overChargeBar = GameObject.Instantiate(TylerKozaki.dataBundle.LoadAsset<GameObject>("Hud Overcharge Bar Tyler"));
+                overChargeBar.transform.parent = ___pfHudEnergyBar.transform;
+                familyBraceletIcon = GameObject.Instantiate(TylerKozaki.dataBundle.LoadAsset<GameObject>("Hud Tyler Bike Icon"));
+                familyBraceletIcon.transform.parent = __instance.gameObject.transform;
             }
         }
-        //Not needed for Tyler hopefully
-        /*
+
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(FPHudMaster), "Start", MethodType.Normal)]
-        static void PatchFPHudMasterStartPost(FPPlayer ___targetPlayer, ref FPHudDigit[] ___hudLifePetals, ref FPHudDigit[] ___hudShields, ref FPHudDigit[] ___hudEnergy)
+        [HarmonyPatch(typeof(FPHudMaster),"LateUpdate",MethodType.Normal)]
+        static void PatchFPHudMasterLateUpdate(FPHudMaster __instance, ref Vector3 ___hudEnergyBarScale,ref GameObject ___energyBarGraphic, FPPlayer ___targetPlayer)
         {
-            if (___targetPlayer.characterID == TylerKozaki.currentTylerID)
+            if (FPSaveManager.character == TylerKozaki.currentTylerID)
             {
-                Vector3 posEnergy = ___hudEnergy[0].transform.position;
-                posEnergy.x = 6;
-                ___hudEnergy[0].transform.position = posEnergy;
+                ___hudEnergyBarScale.x = Mathf.Min(___targetPlayer.energy * 0.011f, 1.1f);
+                ___energyBarGraphic.transform.localScale = ___hudEnergyBarScale;
 
-                //Can be 7 without the item if someone is using some other mod
-                if (___targetPlayer.IsPowerupActive(FPPowerup.MAX_LIFE_UP) || ___targetPlayer.healthMax == 7)
+                if (___targetPlayer.hasSpecialItem)
                 {
-                    Vector3 pos = ___hudLifePetals[0].transform.position;
-                    pos.x += 2;
-                    ___hudLifePetals[0].transform.position = pos;
+                    familyBraceletIcon.GetComponent<FPHudDigit>().SetDigitValue(1);
+                }
+                else
+                {
+                    familyBraceletIcon.GetComponent<FPHudDigit>().SetDigitValue(0);
+                }
 
-                    for (int i = 1; i < 7; i++)
-                    {
-                        pos = ___hudLifePetals[i].transform.position;
-                        pos.x -= 2*i;
-                        ___hudLifePetals[i].transform.position = pos;
-                    }
+                if (PatchFPPlayer.burnoutState)
+                {
+                    overChargeBar.GetComponent<SpriteRenderer>().color = new Color(255, 0, 0, 255);
+                    overChargeBar.transform.position = Vector3.zero;
+                    Vector3 overScale = new Vector3(Mathf.Min(PatchFPPlayer.overCharge * 0.011f, 1.1f),1,1);
+                    overChargeBar.transform.localScale = overScale;
+                }
+                else overChargeBar.GetComponent<SpriteRenderer>().color = new Color(255, 0, 0, 0);
 
-                    //Shields need moving too
-                    pos = ___hudShields[0].transform.position;
-                    pos.x += 1;
-                    ___hudShields[0].transform.position = pos;
-
-                    for (int i = 1; i < 14; i++)
-                    {
-                        pos = ___hudShields[i].transform.position;
-                        pos.x -= i;
-                        ___hudShields[i].transform.position = pos;
-                    }
-
+                if (__instance.state == 1)
+                {
+                    familyBraceletIcon.transform.position = new Vector3(237.5f, -33.5f, 0f);
                 }
             }
         }
-        */
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(FPHudMaster), "GuideUpdate", MethodType.Normal)]
@@ -69,9 +69,9 @@ namespace TylerKozaki.Patches
                 return;
             }
 
-            string jumpText = "Jump";
+            string jumpText = "Eclipse Strike";
             string basicAttackText = "Attack";
-            string specialAttackText = "<c=black>Kunai Throw</c>";
+            string specialAttackText = "<c=energy>Umbral Boost</c>";
             string guardText = "Guard";
 
             if (player.IsKOd(false))
@@ -82,23 +82,12 @@ namespace TylerKozaki.Patches
                 guardText = "-";
             }
 
-            //Kunai throw and it's variants.
+            //Boost
             if (player.energy > 0)
             {
                 if (!PatchFPPlayer.burnoutState)
                 {
-                    if (PatchFPPlayer.throwCharge < 12.5)
-                    {
-                        specialAttackText = "<c=black>Kunai Throw</c>";
-                    }
-                    else if (PatchFPPlayer.throwCharge < 25)
-                    {
-                        specialAttackText = "<c=black>Umbral Blade</c>";
-                    }
-                    else if (PatchFPPlayer.throwCharge >= 25)
-                    {
-                        specialAttackText = "<c=black>Eclipse Orb</c>";
-                    }
+                        specialAttackText = "<c=energy>Umbral Boost</c>";
                 }
                 else
                 {
@@ -110,14 +99,17 @@ namespace TylerKozaki.Patches
             if (!player.onGround && player.state != new FPObjectState(player.State_LadderClimb))
             {
                 jumpText = "Tail Spin";
+                if (player.input.up) basicAttackText = "Eclipse Fang";
+                else if (player.input.down) basicAttackText = "Claw Dive";
+                else basicAttackText = "Kick";
             }
 
             //On the ground, excluding funky states
-            if (player.state != new FPObjectState(player.State_LadderClimb) && player.state != new FPObjectState(player.State_Ball) && player.state != new FPObjectState(player.State_Ball_Physics) && player.state != new FPObjectState(player.State_Ball_Vulnerable))
+            if (player.onGround && player.state != new FPObjectState(player.State_LadderClimb) && player.state != new FPObjectState(player.State_Ball) && player.state != new FPObjectState(player.State_Ball_Physics) && player.state != new FPObjectState(player.State_Ball_Vulnerable))
             {
                 if (player.input.down)
                 {
-                    basicAttackText = "Crouch Attack";
+                    basicAttackText = "Tail Swipe";
                 }
             }
 
@@ -128,6 +120,10 @@ namespace TylerKozaki.Patches
                 specialAttackText = "-";
             }
 
+            if ((player.state == new FPObjectState(PatchFPPlayer.State_Tyler_BoostP1) || player.state == new FPObjectState(PatchFPPlayer.State_Tyler_BoostP2)))
+            {
+                specialAttackText = "<c=red>Umbral Break</c>";
+            }
 
             if (player.displayMoveJump != string.Empty)
             {
