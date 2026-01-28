@@ -46,12 +46,11 @@ namespace TylerKozaki.Patches
 
                 if (PatchFPPlayer.burnoutState)
                 {
-                    overChargeBar.GetComponent<SpriteRenderer>().color = new Color(255, 0, 0, 255);
-                    overChargeBar.transform.position = Vector3.zero;
+                    overChargeBar.gameObject.SetActive(true);
                     Vector3 overScale = new Vector3(Mathf.Min(PatchFPPlayer.overCharge * 0.011f, 1.1f),1,1);
-                    overChargeBar.transform.localScale = overScale;
+                    overChargeBar.transform.position = overScale;
                 }
-                else overChargeBar.GetComponent<SpriteRenderer>().color = new Color(255, 0, 0, 0);
+                else overChargeBar.gameObject.SetActive(false);
 
                 if (__instance.state == 1)
                 {
@@ -69,36 +68,22 @@ namespace TylerKozaki.Patches
                 return;
             }
 
-            string jumpText = "Eclipse Strike";
+            string jumpText = "Jump";
             string basicAttackText = "Attack";
-            string specialAttackText = "<c=energy>Umbral Boost</c>";
-            string guardText = "Guard";
-
-            if (player.IsKOd(false))
-            {
-                jumpText = "-";
-                basicAttackText = "-";
-                specialAttackText = "-";
-                guardText = "-";
-            }
+            string specialAttackText = "<c=energy>Kunai Throw</c>";
+            string guardText = "-";
 
             //Boost
-            if (player.energy > 0)
+            if (player.energy >= 100)
             {
-                if (!PatchFPPlayer.burnoutState)
-                {
-                        specialAttackText = "<c=energy>Umbral Boost</c>";
-                }
-                else
-                {
-                    specialAttackText = "<j><c=red>Burnout</c></j>";
-                }
+                    guardText = "<c=energy>Umbral Boost</c>";
             }
 
             //Mid-air
             if (!player.onGround && player.state != new FPObjectState(player.State_LadderClimb))
             {
                 jumpText = "Tail Spin";
+                specialAttackText = "<c=energy>Multi Kunai</c>";
                 if (player.input.up) basicAttackText = "Eclipse Fang";
                 else if (player.input.down) basicAttackText = "Claw Dive";
                 else basicAttackText = "Kick";
@@ -113,16 +98,29 @@ namespace TylerKozaki.Patches
                 }
             }
 
-            //Blink mode, no attacks allowed
-            if (PatchFPPlayer.blinkState)
+            if (PatchFPPlayer.throwCharge > 25 && player.onGround)
             {
-                basicAttackText = "-";
-                specialAttackText = "-";
+                if (PatchFPPlayer.throwCharge > 90) specialAttackText = "<c=energy><j>Umbral Implosion</j></c>";
+                else specialAttackText = "<c=energy>Blade Throw</c>";
+            }
+
+            if (PatchFPPlayer.burnoutState)
+            {
+                specialAttackText = "<j><c=red>Burnout</c></j>";
+                guardText = "<j><c=red>Burnout</c></j>";
             }
 
             if ((player.state == new FPObjectState(PatchFPPlayer.State_Tyler_BoostP1) || player.state == new FPObjectState(PatchFPPlayer.State_Tyler_BoostP2)))
             {
-                specialAttackText = "<c=red>Umbral Break</c>";
+                guardText = "<c=red>Umbral Break</c>";
+            }
+
+            if (player.IsKOd(false))
+            {
+                jumpText = "-";
+                basicAttackText = "-";
+                specialAttackText = "-";
+                guardText = "-";
             }
 
             if (player.displayMoveJump != string.Empty)
