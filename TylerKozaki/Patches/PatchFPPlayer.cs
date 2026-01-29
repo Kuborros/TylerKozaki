@@ -30,7 +30,7 @@ namespace TylerKozaki.Patches
         internal static float throwDelay = 0f;
         internal static float chargeThrowDelay = 0f;
 
-        private static readonly float kunaiDamage = 4f;
+        private static readonly float kunaiDamage = 2f;
         private static readonly float bladeThrowDamage = 6f;
         private static readonly float umbralBombDamage = 8f;
 
@@ -61,7 +61,16 @@ namespace TylerKozaki.Patches
 
         internal static void Action_Tyler_FuelPickup()
         {
-            player.hasSpecialItem = true;
+            if (player.hasSpecialItem)
+            {
+                player.invincibilityTime = Mathf.Max(player.invincibilityTime, 240f);
+                player.flashTime = Mathf.Max(player.flashTime, 240f);
+                FPAudio.PlaySfx(16);
+            }
+            else
+            {
+                player.hasSpecialItem = true;
+            }
         }
 
         internal static void Action_Tyler_AirMoves()
@@ -165,7 +174,7 @@ namespace TylerKozaki.Patches
                 {
                     player.SetPlayerAnimation("AirThrow");
                     player.genericTimer = 0f;
-                    throwDelay = 5f;
+                    throwDelay = 40f;
                     chargeThrowDelay = 40f;
                     Action_Tyler_Kunai();
                     player.idleTimer = -player.fightStanceTime;
@@ -189,9 +198,23 @@ namespace TylerKozaki.Patches
             //Ground Melee
             //Base (EclipseCombo)
             else if (!player.input.down && !player.input.up && !player.input.jumpPress && player.state != new FPObjectState(State_Tyler_TailSwipe) &&
-            ((player.state != new FPObjectState(State_Tyler_TailSpin) && ((FPSaveManager.holdToAttack >= 1 && player.input.attackHold) || player.input.attackPress)) || player.input.attackPress))
+            ((player.state != new FPObjectState(State_Tyler_AttackHold) && ((FPSaveManager.holdToAttack >= 1 && player.input.attackHold) || player.input.attackPress)) || player.input.attackPress))
             {
-
+                player.genericTimer = 0f;
+                player.idleTimer = 0f - player.fightStanceTime;
+                if (player.nextAttack > 1 && player.nextAttack < 4)
+                {
+                    player.SetPlayerAnimation("EclipseCombo" + player.nextAttack);
+                    player.nextAttack++;
+                }
+                else
+                {
+                    player.SetPlayerAnimation("EclipseCombo1");
+                    player.nextAttack = 2;
+                }
+                player.state = State_Tyler_EclipseCombo;
+                combo = false;
+                player.Action_StopSound();
             }
             //TailSwipe
             else if (player.input.down && player.input.attackHold && player.state == new FPObjectState(player.State_Crouching) && player.currentAnimation != "TailSwipe")
@@ -205,16 +228,23 @@ namespace TylerKozaki.Patches
             }
             //Uppercut (EclipseFang)
             else if (player.input.up && !player.input.jumpPress && player.state != new FPObjectState(State_Tyler_TailSwipe) &&
-            ((player.state != new FPObjectState(State_Tyler_TailSpin) && ((FPSaveManager.holdToAttack >= 1 && player.input.attackHold) || player.input.attackPress)) || player.input.attackPress))
+            ((player.state != new FPObjectState(State_Tyler_AttackHold) && ((FPSaveManager.holdToAttack >= 1 && player.input.attackHold) || player.input.attackPress)) || player.input.attackPress))
             {
-
+                player.Action_SoftJump();
+                player.SetPlayerAnimation("EclipseFang");
+                player.state = State_Tyler_EclipseFang;
+                player.angle = 0f;
+                player.velocity.y += 1f;
+                player.jumpAbilityFlag = true;
+                player.Action_StopSound();
+                player.Action_PlayVoiceArray("HardAttack");
             }
             //Ground Special (UmbralBoost/Kunai)
             else if (player.input.specialHold && chargeThrowDelay < 0f && throwDelay < 0f && player.energy > 25f && player.state != new FPObjectState(State_Tyler_AttackHold))
             {
                 player.SetPlayerAnimation("StandingThrowP1");
                 player.genericTimer = 0f;
-                throwDelay = 5f;
+                throwDelay = 30f;
                 chargeThrowDelay = 50f;
                 player.state = new FPObjectState(State_Tyler_AttackHold);
                 player.idleTimer = -player.fightStanceTime;
@@ -261,7 +291,7 @@ namespace TylerKozaki.Patches
             int kunaiNum = 1;
             if (!player.onGround) kunaiNum = 5;
 
-            player.energy -= 5f;
+            player.energy -= 10f;
             for (int i = 0; i < kunaiNum; i++)
             {
 
@@ -287,7 +317,7 @@ namespace TylerKozaki.Patches
                 basicShot.animatorController = kunaiProjectile;
                 basicShot.animator = basicShot.GetComponent<Animator>();
                 basicShot.animator.runtimeAnimatorController = basicShot.animatorController;
-                basicShot.attackPower = (kunaiDamage * player.GetAttackModifier()) / kunaiNum;
+                basicShot.attackPower = kunaiDamage * player.GetAttackModifier();
                 basicShot.direction = player.direction;
                 if (player.direction == FPDirection.FACING_LEFT)
                     basicShot.direction = FPDirection.FACING_LEFT;
@@ -377,6 +407,7 @@ namespace TylerKozaki.Patches
                 chargeShot.halfHeight = 14;
                 chargeShot.halfWidth = 30;
                 chargeShot.destroyOnHit = true;
+                chargeShot.explodeTimer = 50f;
                 chargeShot.explodeType = FPExplodeType.EXPLOSION;
                 player.Action_PlayVoice(player.vaExtra[5]);
             }
@@ -385,6 +416,7 @@ namespace TylerKozaki.Patches
                 chargeShot.animatorController = bladeThrowProjectile;
                 chargeShot.halfHeight = 10;
                 chargeShot.halfWidth = 10;
+                chargeShot.explodeTimer = 150f;
                 chargeShot.destroyOnHit = false;
                 chargeShot.explodeType = FPExplodeType.WHITEBURST;
                 player.Action_PlayVoice(player.vaExtra[3]);
@@ -401,7 +433,6 @@ namespace TylerKozaki.Patches
             chargeShot.angle = player.angle;
             chargeShot.damageElementType = -1;
             chargeShot.ignoreTerrain = false;
-            chargeShot.explodeTimer = 50f;
             chargeShot.terminalVelocity = 0f;
             chargeShot.gravityStrength = 0;
             chargeShot.sfxExplode = null;
@@ -657,7 +688,93 @@ namespace TylerKozaki.Patches
 
         internal static void State_Tyler_EclipseCombo()
         {
+            if (player.onGround)
+            {
+                if (player.input.jumpPress)
+                {
+                    player.Action_SoftJump();
+                }
+                else
+                {
+                    ApplyGroundForces(player,false);
+                    player.angle = player.groundAngle;
+                }
+                player.jumpAbilityFlag = false;
+            }
+            else
+            {
+                ApplyAirForces(player,false);
+                ApplyGravityForce(player);
+                RotatePlayerUpright(player);
+                if (!player.input.jumpHold && player.jumpReleaseFlag)
+                {
+                    player.jumpReleaseFlag = false;
+                    if (player.velocity.y > player.jumpRelease)
+                    {
+                        player.velocity.y = player.jumpRelease;
+                    }
+                }
+                if (player.targetWaterSurface != null)
+                {
+                    ApplyWaterForces(player);
+                    player.velocity.y += 0.3f * FPStage.deltaTime;
+                    if (player.velocity.y < -4.5f)
+                    {
+                        player.velocity.y = -4.5f;
+                    }
+                }
+            }
+            if (((FPSaveManager.holdToAttack >= 1 && player.input.attackHold) || player.input.attackPress) && player.animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.5f)
+            {
+                combo = true;
+            }
+            if (combo && player.currentAnimation != "TailSwipe" && player.animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.95f)
+            {
+                combo = false;
+                if (player.onGround && player.input.up)
+                {
+                    player.Action_SoftJump();
+                    player.SetPlayerAnimation("EclipseFang");
+                    player.state = State_Tyler_EclipseFang;
+                    player.Action_PlayVoiceArray("HardAttack");
+                }
+                else
+                {
+                    if (player.nextAttack > 1 && player.nextAttack < 4)
+                    {
+                        player.SetPlayerAnimation("EclipseCombo" + player.nextAttack);
+                        player.nextAttack++;
+                    }
+                    else
+                    {
+                        player.SetPlayerAnimation("EclipseCombo1");
+                        player.Action_PlayVoiceArray("Attack");
+                        player.nextAttack = 2;
+                    }
+                }
+            }
+            if (player.animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1f)
+            {
+                if (player.onGround)
+                {
+                    if (player.input.down && Mathf.Abs(player.groundVel) <= 3f)
+                    {
+                        player.state = player.State_Crouching;
+                        player.SetPlayerAnimation("Crouching", 1f, 0f, true);
+                    }
+                    else
+                    {
+                        player.state = player.State_Ground;
+                    }
+                }
+                else
+                {
+                       player.SetPlayerAnimation("Jumping", 0.5f, 0.5f);
 
+                    player.state = player.State_InAir;
+                }
+            }
+            player.attackStats = AttackStats_Kick;
         }
 
         internal static void State_Tyler_BoostP1()
@@ -876,7 +993,7 @@ namespace TylerKozaki.Patches
                 player.SetPlayerAnimation("Jumping", 0.25f, 0.25f);
                 player.state = player.State_InAir;
             }
-            if (player.input.guardPress || player.input.guardHold)
+            if (player.input.guardPress)
             {
                 Action_Tyler_BoostBreaker();
             }
@@ -1164,7 +1281,7 @@ namespace TylerKozaki.Patches
                 PlaySFXLooping(chargeSfx, 1f);
                 player.genericTimer += FPStage.deltaTime;
                 player.energyRecoverRate = 0f;
-                throwCharge += 1f * FPStage.deltaTime;
+                throwCharge += 0.5f * FPStage.deltaTime;
                 player.energy -= 1f * FPStage.deltaTime;
 
                 if (player.onGround)
@@ -1480,6 +1597,16 @@ namespace TylerKozaki.Patches
 
                 //Potion seller related fix
                 energyRecoveryBaseSpeed = __instance.energyRecoverRate;
+            }
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(FPPlayer), "GetAttackModifier", MethodType.Normal)]
+        static void PatchPlayerAttackModifier(FPPlayer __instance, ref float __result)
+        {
+            if (__instance.characterID == TylerKozaki.currentTylerID)
+            {
+                if (burnoutState) __result *= 2;
             }
         }
 

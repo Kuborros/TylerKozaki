@@ -9,8 +9,8 @@ namespace TylerKozaki.Patches
         [HarmonyPatch(typeof(AnimatorPreInitializer), "Start", MethodType.Normal)]
         static void PatchAnimatorPreInit(ref AnimatorInitializationParams[] ___animatorsToInit)
         {
-            AnimatorInitializationParams lightingInit = new AnimatorInitializationParams();
-            lightingInit.animator = TylerKozaki.dataBundle.LoadAsset<Animator>("Tyler Animator Player");
+            AnimatorInitializationParams tylerInit = new AnimatorInitializationParams();
+            tylerInit.animator = TylerKozaki.dataBundle.LoadAsset<Animator>("Tyler Animator Player");
 
             AnimatorInitializationClipParams[] clipsToInit = {
 
@@ -18,12 +18,18 @@ namespace TylerKozaki.Patches
                 new AnimatorInitializationClipParams("Running"),
                 new AnimatorInitializationClipParams("Rolling"),
                 new AnimatorInitializationClipParams("Jumping"),
+                new AnimatorInitializationClipParams("ClawDive"),
+                new AnimatorInitializationClipParams("Crouching"),
+                new AnimatorInitializationClipParams("Throw"),
+                new AnimatorInitializationClipParams("AirThrow"),
+                new AnimatorInitializationClipParams("TailSpin"),
+                new AnimatorInitializationClipParams("TailSpin_Loop"),
                 new AnimatorInitializationClipParams("Pose1")
 
             };
-            lightingInit.animationClipsToPlay = clipsToInit;
+            tylerInit.animationClipsToPlay = clipsToInit;
 
-            ___animatorsToInit = ___animatorsToInit.AddToArray(lightingInit);
+            ___animatorsToInit = ___animatorsToInit.AddToArray(tylerInit);
         }
     }
 }

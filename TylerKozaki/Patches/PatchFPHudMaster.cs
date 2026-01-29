@@ -1,4 +1,6 @@
 ﻿using HarmonyLib;
+using System.Linq;
+using System.Security.Policy;
 using UnityEngine;
 
 namespace TylerKozaki.Patches
@@ -6,7 +8,8 @@ namespace TylerKozaki.Patches
     internal class PatchFPHudMaster
     {
         internal static GameObject familyBraceletIcon;
-        internal static GameObject overChargeBar;
+        private static Sprite hudNormalMode;
+        private static Sprite hudDarkMode;
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(FPHudMaster), "Start", MethodType.Normal)]
@@ -19,18 +22,20 @@ namespace TylerKozaki.Patches
                 ___pfHudEnergyBar = TylerKozaki.dataBundle.LoadAsset<GameObject>("Hud Energy Bar Tyler");
                 ___pfHudLifePetal = TylerKozaki.dataBundle.LoadAsset<GameObject>("Hud Life Petal Tyler");
 
-                overChargeBar = GameObject.Instantiate(TylerKozaki.dataBundle.LoadAsset<GameObject>("Hud Overcharge Bar Tyler"));
-                overChargeBar.transform.parent = ___pfHudEnergyBar.transform;
                 familyBraceletIcon = GameObject.Instantiate(TylerKozaki.dataBundle.LoadAsset<GameObject>("Hud Tyler Bike Icon"));
                 familyBraceletIcon.transform.parent = __instance.gameObject.transform;
+
+                hudNormalMode = ___pfHudBase.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite;
+                hudDarkMode = TylerKozaki.dataBundle.LoadAssetWithSubAssets<Sprite>("health bar background")[2];
             }
         }
 
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(FPHudMaster),"LateUpdate",MethodType.Normal)]
-        static void PatchFPHudMasterLateUpdate(FPHudMaster __instance, ref Vector3 ___hudEnergyBarScale,ref GameObject ___energyBarGraphic, FPPlayer ___targetPlayer)
+        static void PatchFPHudMasterLateUpdate(FPHudMaster __instance, ref Vector3 ___hudEnergyBarScale,ref GameObject ___energyBarGraphic, FPPlayer ___targetPlayer,ref SpriteRenderer ___hudBaseSprite)
         {
-            if (FPSaveManager.character == TylerKozaki.currentTylerID)
+            if (___targetPlayer.characterID == TylerKozaki.currentTylerID)
             {
                 ___hudEnergyBarScale.x = Mathf.Min(___targetPlayer.energy * 0.011f, 1.1f);
                 ___energyBarGraphic.transform.localScale = ___hudEnergyBarScale;
@@ -43,14 +48,18 @@ namespace TylerKozaki.Patches
                 {
                     familyBraceletIcon.GetComponent<FPHudDigit>().SetDigitValue(0);
                 }
-
-                if (PatchFPPlayer.burnoutState)
+                //Horrible hack but we do run it quite often. We edit a lot of HUD already, so if other mod tries to as well..
+                if (___hudBaseSprite != null)
                 {
-                    overChargeBar.gameObject.SetActive(true);
-                    Vector3 overScale = new Vector3(Mathf.Min(PatchFPPlayer.overCharge * 0.011f, 1.1f),1,1);
-                    overChargeBar.transform.position = overScale;
+                    if ((___targetPlayer.energy == 0 || PatchFPPlayer.burnoutState))
+                    {
+                        ___hudBaseSprite.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = hudDarkMode;
+                    }
+                    else
+                    {
+                        ___hudBaseSprite.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = hudNormalMode;
+                    }
                 }
-                else overChargeBar.gameObject.SetActive(false);
 
                 if (__instance.state == 1)
                 {

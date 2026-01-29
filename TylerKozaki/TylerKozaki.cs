@@ -26,7 +26,7 @@ namespace TylerKozaki
         private void Awake()
         {
             // Plugin startup logic
-            logSource = base.Logger;
+            logSource = Logger;
 
             string assetPath = Path.Combine(Path.GetFullPath("."), "mod_overrides\\TylerKozaki");
             dataBundle = AssetBundle.LoadFromFile(Path.Combine(assetPath, "tylerKozaki.assets"));
@@ -53,14 +53,7 @@ namespace TylerKozaki
 
             BadgeHandler.RegisterBadge("kubo.tylertailkill", "Eat my Tail", "Beat a boss with Umbral Tail Spin.", dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's badges")[2], FPBadgeType.GOLD);
             BadgeHandler.RegisterBadge("kubo.tylershadowkill", "Shadow Arts", "Beat a boss with Umbral Throw special (Kunai, Blade, or Eclipse Bomb).", dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's badges")[1], FPBadgeType.GOLD);
-            BadgeHandler.RegisterBadge("kubo.tylerboostkill", "Howling Shadows", "Beat a boss with umbral boost or the umbral boost overdrive.", dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's badges")[0], FPBadgeType.GOLD);
-
-            //Add Items
-
-
-            //ItemHandler.RegisterItem("kubo.tylermemento", "Kozaki Family Bracelet", dataBundle.LoadAsset<Sprite>("Wolf dragon pendent"), "", IAddToShop.None,0,0,0);
-            //familyBraceletID = (FPPowerup)ItemHandler.GetItemDataByUid("kubo.tylermemento").itemID;
-
+            BadgeHandler.RegisterBadge("kubo.tylerboostkill", "Howling Shadows", "Beat a boss with Umbral Boost", dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's badges")[0], FPBadgeType.GOLD);
 
             //Some special cases
             Sprite[] worldMapIdle = [null];
@@ -115,7 +108,7 @@ namespace TylerKozaki
                 worldMapWalk = worldMapWalk,
                 resultsTrack = tylerClear,
                 endingTrack = tylerTheme,
-                playerBoss = null,
+                playerBoss = dataBundle.LoadAsset<GameObject>("Boss Tyler").GetComponent<PlayerBoss>(),
                 menuPhotoPose = menuPhotoPose,
                 characterSelectPrefab = dataBundle.LoadAsset<GameObject>("Menu CS Character Tyler"),
                 menuInstructionPrefab = null,//dataBundle.LoadAsset<GameObject>("MenuInstructionsTyler"),
@@ -136,6 +129,8 @@ namespace TylerKozaki
             harmony.PatchAll(typeof(PatchAnimatorPreInitializer));
             harmony.PatchAll(typeof(PatchFPEventSequence));
             harmony.PatchAll(typeof(PatchFPHudMaster));
+            harmony.PatchAll(typeof(PatchFPBossHud));
+            harmony.PatchAll(typeof(PatchFPBaseEnemy));
             harmony.PatchAll(typeof(PatchFPPlayer));
             harmony.PatchAll(typeof(PatchFPResultsMenu));
             harmony.PatchAll(typeof(PatchFPSaveManager));
