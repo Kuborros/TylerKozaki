@@ -10,9 +10,13 @@ namespace TylerKozaki.Objects
         public FPHitBox walkRange;
         public float pursuitRange;
         public FPBaseObject targetToPursue;
+        public RuntimeAnimatorController kunaiProjectile;
+
+        public float kunaiDamage;
 
         private int nextMotion;
         private int comboState;
+        private int kunaiAngle;
 
         //Generic boss stuff
         public override void ResetStaticVars()
@@ -536,6 +540,108 @@ namespace TylerKozaki.Objects
                 genericTimer += FPStage.deltaTime;
             }
             CheckBoundaries();
+        }
+
+        private void Action_Tyler_Kunai()
+        {
+            int kunaiNum = 1;
+            if (!onGround) kunaiNum = 5;
+
+            energy -= 10f;
+            for (int i = 0; i < kunaiNum; i++)
+            {
+
+                float throwAngle = angle;
+                if (!onGround)
+                    throwAngle = angle - (kunaiAngle - 2) * 10f;
+
+
+                FPAudio.PlaySfx(attackSfx);
+                ProjectileBasic basicShot;
+                if (direction == FPDirection.FACING_LEFT)
+                {
+                    basicShot = (ProjectileBasic)FPStage.CreateStageObject(ProjectileBasic.classID, position.x - Mathf.Cos(0.017453292f * throwAngle) * 32f + Mathf.Sin(0.017453292f * throwAngle) * (float)8f, position.y + Mathf.Cos(0.017453292f * throwAngle) * (float)8f - Mathf.Sin(0.017453292f * throwAngle) * 32f);
+                    basicShot.velocity.x = Mathf.Cos(0.017453292f * throwAngle) * -16f;
+                    basicShot.velocity.y = Mathf.Sin(0.017453292f * throwAngle) * -16f;
+                }
+                else
+                {
+                    basicShot = (ProjectileBasic)FPStage.CreateStageObject(ProjectileBasic.classID, position.x + Mathf.Cos(0.017453292f * throwAngle) * 32f + Mathf.Sin(0.017453292f * throwAngle) * (float)8f, position.y + Mathf.Cos(0.017453292f * throwAngle) * (float)8f + Mathf.Sin(0.017453292f * throwAngle) * 32f);
+                    basicShot.velocity.x = Mathf.Cos(0.017453292f * throwAngle) * 16f;
+                    basicShot.velocity.y = Mathf.Sin(0.017453292f * throwAngle) * 16f;
+                }
+                basicShot.animatorController = kunaiProjectile;
+                basicShot.animator = basicShot.GetComponent<Animator>();
+                basicShot.animator.runtimeAnimatorController = basicShot.animatorController;
+                basicShot.attackPower = kunaiDamage;
+                basicShot.direction = direction;
+                if (direction == FPDirection.FACING_LEFT)
+                    basicShot.direction = FPDirection.FACING_LEFT;
+                else
+                    basicShot.direction = FPDirection.FACING_RIGHT;
+                basicShot.angle = angle;
+                basicShot.damageElementType = -1;
+                basicShot.explodeType = FPExplodeType.WHITEBURST;
+                basicShot.ignoreTerrain = false;
+                basicShot.explodeTimer = 50f;
+                basicShot.destroyOnHit = true;
+                basicShot.terminalVelocity = 0f;
+                basicShot.gravityStrength = 0;
+                basicShot.sfxExplode = null;
+                basicShot.parentObject = this;
+                basicShot.faction = faction;
+                basicShot.timeBeforeCollisions = 0f;
+                basicShot.halfHeight = 2;
+                basicShot.halfWidth = 8;
+
+                kunaiAngle++;
+            }
+            kunaiAngle = 0;
+        }
+
+        private void State_Tyler_Roll()
+        {
+            SetPlayerAnimation("Rolling");
+            attackStats = AttackStats_CarolRoll;
+            genericTimer += FPStage.deltaTime;
+            if (onGround)
+            {
+                animator.SetSpeed(Mathf.Abs(groundVel) * 0.15f);
+                if (input.jumpPress)
+                {
+                    Action_SoftJump();
+                    animator.SetSpeed(2f);
+                }
+                else
+                {
+                    ApplyGroundForces();
+                    angle = groundAngle;
+                }
+            }
+            else
+            {
+                ApplyAirForces();
+                ApplyGravityForce();
+                if (!input.jumpHold && jumpReleaseFlag)
+                {
+                    jumpReleaseFlag = false;
+                    if (velocity.y > jumpRelease)
+                    {
+                        velocity.y = jumpRelease;
+                    }
+                }
+            }
+            if (genericTimer > 15f && (!input.down || (onGround && Mathf.Abs(groundVel) < 2f) || (!onGround && velocity.y < 0f)))
+            {
+                if (onGround)
+                {
+                    state = State_Running;
+                }
+                else
+                {
+                    state = State_Jumping;
+                }
+            }
         }
     }
 

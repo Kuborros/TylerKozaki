@@ -30,9 +30,8 @@ namespace TylerKozaki.Patches
         internal static float throwDelay = 0f;
         internal static float chargeThrowDelay = 0f;
 
-        private static readonly float kunaiDamage = 2f;
+        private static readonly float kunaiDamage = 4f;
         private static readonly float bladeThrowDamage = 6f;
-        private static readonly float umbralBombDamage = 8f;
 
         internal static bool burnoutState = false;
         internal static bool combo = false;
@@ -285,7 +284,6 @@ namespace TylerKozaki.Patches
             player.state = State_Tyler_BoostBreaker;
         }
 
-
         internal static void Action_Tyler_Kunai()
         {
             int kunaiNum = 1;
@@ -401,31 +399,17 @@ namespace TylerKozaki.Patches
                 chargeShot.velocity.y = Mathf.Sin(0.017453292f * player.angle) * 10f;
             }
 
-            if (throwCharge > 90f)
-            {
-                chargeShot.animatorController = umbralBombProjectile;
-                chargeShot.halfHeight = 14;
-                chargeShot.halfWidth = 30;
-                chargeShot.destroyOnHit = true;
-                chargeShot.explodeTimer = 50f;
-                chargeShot.explodeType = FPExplodeType.EXPLOSION;
-                player.Action_PlayVoice(player.vaExtra[5]);
-            }
-            else
-            {
-                chargeShot.animatorController = bladeThrowProjectile;
-                chargeShot.halfHeight = 10;
-                chargeShot.halfWidth = 10;
-                chargeShot.explodeTimer = 150f;
-                chargeShot.destroyOnHit = false;
-                chargeShot.explodeType = FPExplodeType.WHITEBURST;
-                player.Action_PlayVoice(player.vaExtra[3]);
-            }
+            chargeShot.animatorController = bladeThrowProjectile;
+            chargeShot.halfHeight = 10;
+            chargeShot.halfWidth = 10;
+            chargeShot.explodeTimer = 150f;
+            chargeShot.destroyOnHit = false;
+            chargeShot.explodeType = FPExplodeType.WHITEBURST;
+            player.Action_PlayVoice(player.vaExtra[3]);
+
             chargeShot.animator = chargeShot.GetComponent<Animator>();
             chargeShot.animator.runtimeAnimatorController = chargeShot.animatorController;
-            if (throwCharge > 90) chargeShot.animator.SetSpeed(2f);
-
-            chargeShot.attackPower = (kunaiDamage + Math.Min(umbralBombDamage, throwCharge / 10)) * player.GetAttackModifier();
+            chargeShot.attackPower = (kunaiDamage + Math.Min(bladeThrowDamage, throwCharge / 10)) * player.GetAttackModifier();
             if (player.direction == FPDirection.FACING_LEFT)
                 chargeShot.direction = FPDirection.FACING_LEFT;
             else
@@ -533,7 +517,11 @@ namespace TylerKozaki.Patches
                 player.SetPlayerAnimation("Jumping", 0f, 0f);
                 //Tyler "Jump 1/2" lines go here
                 //UnityEngine.Random.Range() is a funny creature, first value is inclusive, but the second is exclusive. So, "0, 2" is a range from 0 to 1.
-                player.audioChannel[0].PlayOneShot(player.vaExtra[UnityEngine.Random.Range(0, 2)]);
+                if (player.voiceTimer <= 0f)
+                {
+                    player.voiceTimer = 900f;
+                    player.audioChannel[0].PlayOneShot(player.vaExtra[Random.Range(0, 2)]);
+                }
             }
             //On ground somehow, while also wall clinging. Force grounded state
             else if (player.onGround)
@@ -696,14 +684,14 @@ namespace TylerKozaki.Patches
                 }
                 else
                 {
-                    ApplyGroundForces(player,false);
+                    ApplyGroundForces(player, false);
                     player.angle = player.groundAngle;
                 }
                 player.jumpAbilityFlag = false;
             }
             else
             {
-                ApplyAirForces(player,false);
+                ApplyAirForces(player, false);
                 ApplyGravityForce(player);
                 RotatePlayerUpright(player);
                 if (!player.input.jumpHold && player.jumpReleaseFlag)
@@ -743,6 +731,7 @@ namespace TylerKozaki.Patches
                     if (player.nextAttack > 1 && player.nextAttack < 4)
                     {
                         player.SetPlayerAnimation("EclipseCombo" + player.nextAttack);
+                        player.Action_PlayVoiceArray("Attack");
                         player.nextAttack++;
                     }
                     else
@@ -769,7 +758,7 @@ namespace TylerKozaki.Patches
                 }
                 else
                 {
-                       player.SetPlayerAnimation("Jumping", 0.5f, 0.5f);
+                    player.SetPlayerAnimation("Jumping", 0.5f, 0.5f);
 
                     player.state = player.State_InAir;
                 }
@@ -1028,79 +1017,6 @@ namespace TylerKozaki.Patches
                 else
                 {
                     player.SetPlayerAnimation("Jumping", 0.5f, 0.5f);
-                    player.state = player.State_InAir;
-                }
-            }
-        }
-
-        internal static void State_Tyler_Wall_Bonk()
-        {
-            player.genericTimer += FPStage.deltaTime;
-            if (player.onGround)
-            {
-                if (player.input.jumpPress)
-                {
-                    player.Action_SoftJump();
-                }
-                else
-                {
-                    ApplyGroundForces(player, false);
-                    player.angle = player.groundAngle;
-                }
-                player.jumpAbilityFlag = false;
-            }
-            else
-            {
-                ApplyAirForces(player, false);
-                ApplyGravityForce(player);
-                RotatePlayerUpright(player);
-                if (!player.input.jumpHold && player.jumpReleaseFlag)
-                {
-                    player.jumpReleaseFlag = false;
-                    if (player.velocity.y > player.jumpRelease)
-                    {
-                        player.velocity.y = player.jumpRelease;
-                    }
-                }
-                if (player.targetWaterSurface != null)
-                {
-                    ApplyWaterForces(player);
-                    player.velocity.y += 0.3f * FPStage.deltaTime;
-                    if (player.velocity.y < -4.5f)
-                    {
-                        player.velocity.y = -4.5f;
-                    }
-                }
-            }
-            //Flying back
-            if (player.genericTimer < 15f && player.colliderRoof != null && !player.onGround)
-            {
-
-            }
-            //Speen
-            else if (player.genericTimer < 30f && !player.onGround)
-            {
-                player.SetPlayerAnimation("Rolling", 0.5f, 0.5f);
-                player.velocity.x = 0f;
-                player.velocity.y = 0f;
-            }
-            else if (player.genericTimer >= 30f || player.onGround)
-            {
-                if (player.onGround)
-                {
-                    if (player.input.down && Mathf.Abs(player.groundVel) <= 3f)
-                    {
-                        player.state = player.State_Crouching;
-                        player.SetPlayerAnimation("Crouching", 1f, 0f, true);
-                    }
-                    else
-                    {
-                        player.state = player.State_Ground;
-                    }
-                }
-                else
-                {
-                    player.SetPlayerAnimation("Jumping_Loop", 0.5f, 0.5f);
                     player.state = player.State_InAir;
                 }
             }
@@ -1515,9 +1431,9 @@ namespace TylerKozaki.Patches
 
                 //Wall cling - Carol's version also just drags her out of update loop by force.
                 //Hopefully a humble postfix will do the job, otherwise the following code should be placed into a method and call to it transpiled under Carol's version of this code
-                if (player.state == new FPObjectState(player.State_InAir) || player.state == new FPObjectState(player.State_Swimming))
+                if (player.state == new FPObjectState(player.State_InAir) && player.targetWaterSurface == null)
                 {
-                    if (!player.onGround && player.state != new FPObjectState(State_Tyler_Wall)/* && state != new FPObjectState(State_Carol_Punch) && state != new FPObjectState(State_Carol_JumpDiscThrow) && state != new FPObjectState(State_Carol_JumpDiscWarp)*/)
+                    if (!player.onGround && player.state != new FPObjectState(State_Tyler_Wall))
                     {
                         if (player.velocity.y < 4f && ((player.input.left && player.prevVelocity.x <= 0f && player.velocity.x <= 0f) ||
                             (player.input.right && player.prevVelocity.x >= 0f && player.velocity.x >= 0f)) && player.colliderWall != null && (player.targetWaterSurface == null ||

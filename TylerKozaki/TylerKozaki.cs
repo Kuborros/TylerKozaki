@@ -111,7 +111,7 @@ namespace TylerKozaki
                 playerBoss = dataBundle.LoadAsset<GameObject>("Boss Tyler").GetComponent<PlayerBoss>(),
                 menuPhotoPose = menuPhotoPose,
                 characterSelectPrefab = dataBundle.LoadAsset<GameObject>("Menu CS Character Tyler"),
-                menuInstructionPrefab = null,//dataBundle.LoadAsset<GameObject>("MenuInstructionsTyler"),
+                menuInstructionPrefab = dataBundle.LoadAsset<GameObject>("MenuInstructionsTyler"),
                 prefab = dataBundle.LoadAsset<GameObject>("Player Tyler"),
                 dataBundle = dataBundle
             };
@@ -137,6 +137,8 @@ namespace TylerKozaki
             harmony.PatchAll(typeof(PatchMenuClassic));
             harmony.PatchAll(typeof(PatchMenuWorldMap));
             harmony.PatchAll(typeof(PatchProjectileBasic));
+            harmony.PatchAll(typeof(PatchItemFuel));
+            harmony.PatchAll(typeof(PatchZLBaseballFlyer));
         }
     }
 }
