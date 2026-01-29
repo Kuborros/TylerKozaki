@@ -5,11 +5,18 @@ namespace TylerKozaki.Patches
 {
     internal class PatchFPBossHud
     {
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(FPBossHud), "LateUpdate", MethodType.Normal)]
+        static void PatchFPBossHudLateUpdatePre(FPBossHud __instance, out bool __state)
+        {
+            __state = __instance.bossDeathActionsExecuted;
+        }
+
         [HarmonyPostfix]
         [HarmonyPatch(typeof(FPBossHud), "LateUpdate", MethodType.Normal)]
-        static void PatchFPBossHudLateUpdate(FPBossHud __instance, FPBaseEnemy[] ___weakpointCheck)
+        static void PatchFPBossHudLateUpdate(FPBossHud __instance,bool __state, FPBaseEnemy[] ___weakpointCheck)
         {
-            if (__instance.targetBoss == null || __instance.bossDeathActionsExecuted || !(__instance.targetBoss.health <= 0f))
+            if (__instance.targetBoss == null || __state || !(__instance.targetBoss.health <= 0f))
             {
                 return;
             }

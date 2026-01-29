@@ -20,7 +20,7 @@ namespace TylerKozaki.Patches
                         {
                             continue;
                         }
-                        if (FPCollision.CheckOOBB(objectRef, fPPlayer.hbAttack, __instance, __instance.hbWeakpoint) && !__instance.cannotBeKilled && __instance.health <= 0f)
+                        if (FPCollision.CheckOOBB(objectRef, fPPlayer.hbAttack, __instance, __instance.hbWeakpoint))
                         {
                             if (fPPlayer.state == new FPObjectState(PatchFPPlayer.State_Tyler_BoostP1) || fPPlayer.state == new FPObjectState(PatchFPPlayer.State_Tyler_BoostP2))
                             {
@@ -53,7 +53,7 @@ namespace TylerKozaki.Patches
                         if (FPCollision.CheckOOBB(__instance, __instance.hbWeakpoint, objectRef, projectileBasic.hbTouch))
                         {
                             FPPlayer fPPlayer = projectileBasic.parentObject as FPPlayer;
-                            if (fPPlayer != null && !__instance.cannotBeKilled && __instance.health <= 0f)
+                            if (fPPlayer != null)
                             {
                                 if (projectileBasic.animator != null)
                                 {
