@@ -171,11 +171,11 @@ namespace TylerKozaki.Patches
             {
                 if (player.state != new FPObjectState(State_Tyler_AttackHold))
                 {
-                    player.SetPlayerAnimation("AirThrow");
                     player.genericTimer = 0f;
                     throwDelay = 40f;
-                    chargeThrowDelay = 40f;
+                    chargeThrowDelay = 50f;
                     Action_Tyler_Kunai();
+                    player.state = State_Tyler_KunaiThrow;
                     player.idleTimer = -player.fightStanceTime;
                     player.Action_StopSound();
                 }
@@ -238,7 +238,7 @@ namespace TylerKozaki.Patches
                 player.Action_StopSound();
                 player.Action_PlayVoiceArray("HardAttack");
             }
-            //Ground Special (UmbralBoost/Kunai)
+            //Ground Special (Kunai)
             else if (player.input.specialHold && chargeThrowDelay < 0f && throwDelay < 0f && player.energy > 25f && player.state != new FPObjectState(State_Tyler_AttackHold))
             {
                 player.SetPlayerAnimation("StandingThrowP1");
@@ -253,7 +253,7 @@ namespace TylerKozaki.Patches
             {
                 player.SetPlayerAnimation("Throw", null, null, true, true);
                 player.genericTimer = 0f;
-                throwDelay = 5f;
+                throwDelay = 10f;
                 chargeThrowDelay = 40f;
                 Action_Tyler_Kunai();
                 player.idleTimer = -player.fightStanceTime;
@@ -286,6 +286,8 @@ namespace TylerKozaki.Patches
 
         internal static void Action_Tyler_Kunai()
         {
+            throwCharge = 0;
+
             int kunaiNum = 1;
             if (!player.onGround) kunaiNum = 5;
 
@@ -338,6 +340,7 @@ namespace TylerKozaki.Patches
 
                 kunaiAngle++;
             }
+            if (player.onGround) player.SetPlayerAnimation("Throw");
             Action_Tyler_ResetKunaiAngle();
         }
 
@@ -958,7 +961,7 @@ namespace TylerKozaki.Patches
                     }
                     if (player.hitStun <= 0f && Mathf.Repeat(player.genericTimer, 2f) < 1f)
                     {
-                        BoostFlameTrail boostFlameTrail = (BoostFlameTrail)FPStage.CreateStageObject(BoostFlameTrail.classID, player.position.x + UnityEngine.Random.Range(-24f, 24f), player.position.y + UnityEngine.Random.Range(-24f, 24f));
+                        BoostFlameTrail boostFlameTrail = (BoostFlameTrail)FPStage.CreateStageObject(BoostFlameTrail.classID, player.position.x + Random.Range(-24f, 24f), player.position.y + Random.Range(-24f, 24f));
                         boostFlameTrail.parentObject = player;
                         if (player.direction == FPDirection.FACING_LEFT)
                         {
@@ -1189,6 +1192,46 @@ namespace TylerKozaki.Patches
             }
         }
 
+        internal static void State_Tyler_KunaiThrow()
+        {
+            player.genericTimer += FPStage.deltaTime;
+            if (player.genericTimer < 15 && !player.onGround)
+            {
+                player.SetPlayerAnimation("AirThrow");
+                ApplyAirForces(player, false);
+                ApplyGravityForce(player);
+                RotatePlayerUpright(player);
+                if (!player.input.jumpHold && player.jumpReleaseFlag)
+                {
+                    player.jumpReleaseFlag = false;
+                    if (player.velocity.y > player.jumpRelease)
+                    {
+                        player.velocity.y = player.jumpRelease;
+                    }
+                }
+                if (player.targetWaterSurface != null)
+                {
+                    ApplyWaterForces(player);
+                    player.velocity.y += 0.3f * FPStage.deltaTime;
+                    if (player.velocity.y < -4.5f)
+                    {
+                        player.velocity.y = -4.5f;
+                    }
+                }
+            }
+            else
+            {
+                if (player.onGround)
+                {
+                    player.state = player.State_Ground;
+                }
+                else
+                {
+                    player.state = player.State_InAir;
+                }
+            }
+        }
+
         internal static void State_Tyler_AttackHold()
         {
             if (player.input.specialHold && player.energy > 0f)
@@ -1300,7 +1343,7 @@ namespace TylerKozaki.Patches
 
         private static void AttackStats_Kick()
         {
-            player.attackPower = 3f;
+            player.attackPower = 4f;
             player.attackHitstun = 4f;
             player.attackEnemyInvTime = 5f / player.animator.speed;
             player.attackKnockback.x = Mathf.Max(Mathf.Abs(player.prevVelocity.x * 1.5f), 4.5f);

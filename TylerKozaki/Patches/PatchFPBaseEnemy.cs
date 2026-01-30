@@ -12,7 +12,6 @@ namespace TylerKozaki.Patches
             {
                 if (FPStage.ConfirmClassWithPoolTypeID(typeof(FPPlayer), FPPlayer.classID))
                 {
-                    objectRef = null;
                     while (FPStage.ForEach(FPPlayer.classID, ref objectRef))
                     {
                         FPPlayer fPPlayer = (FPPlayer)objectRef;
@@ -42,7 +41,6 @@ namespace TylerKozaki.Patches
             if (FPSaveManager.character == TylerKozaki.currentTylerID) {
                 if (FPStage.ConfirmClassWithPoolTypeID(typeof(ProjectileBasic), ProjectileBasic.classID))
                 {
-                    objectRef = null;
                     while (FPStage.ForEach(ProjectileBasic.classID, ref objectRef))
                     {
                         ProjectileBasic projectileBasic = (ProjectileBasic)objectRef;
