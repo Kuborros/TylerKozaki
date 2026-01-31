@@ -21,7 +21,6 @@ namespace TylerKozaki
         public static AssetBundle tutorialScene;
 
         internal static FPCharacterID currentTylerID;
-        internal static FPPowerup familyBraceletID;
 
         private void Awake()
         {
@@ -30,8 +29,9 @@ namespace TylerKozaki
 
             string assetPath = Path.Combine(Path.GetFullPath("."), "mod_overrides\\TylerKozaki");
             dataBundle = AssetBundle.LoadFromFile(Path.Combine(assetPath, "tylerKozaki.assets"));
+            tutorialScene = AssetBundle.LoadFromFile(Path.Combine(assetPath, "tylerKozaki.scene"));
 
-            if (dataBundle == null)
+            if (dataBundle == null || tutorialScene == null)
             {
                 logSource.LogError("Failed to load AssetBundles! This mod cannot work without them, exiting. Please reinstall it.");
                 return;
@@ -75,7 +75,7 @@ namespace TylerKozaki
             {
                 uid = "com.kuborro.tyler",
                 Name = "Tyler",
-                TutorialScene = "Tutorial1",
+                TutorialScene = "Tutorial1Tyler",
                 characterType = "SHADOW Type",
                 skill1 = "Kunai Throw",
                 skill2 = "Tail Spin",

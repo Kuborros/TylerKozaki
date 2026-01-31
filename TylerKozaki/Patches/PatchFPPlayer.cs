@@ -368,6 +368,30 @@ namespace TylerKozaki.Patches
                         }
                         else __instance.shieldID = (byte)lastDamageType;
                         __instance.shieldHealth = 2;
+
+                        //Spawn shield orb
+                        ShieldOrb shieldOrb = (ShieldOrb)FPStage.CreateStageObject(ShieldOrb.classID, __instance.position.x, __instance.position.y + 60f);
+                        shieldOrb.spawnLocation = __instance;
+                        shieldOrb.parentObject = __instance;
+                        switch (__instance.shieldID)
+                        {
+                            case 0:
+                                shieldOrb.animator.Play("Wood", 0, 0f);
+                                break;
+                            case 1:
+                                shieldOrb.animator.Play("Earth", 0, 0f);
+                                break;
+                            case 2:
+                                shieldOrb.animator.Play("Water", 0, 0f);
+                                break;
+                            case 3:
+                                shieldOrb.animator.Play("Fire", 0, 0f);
+                                break;
+                            case 4:
+                                shieldOrb.animator.Play("Metal", 0, 0f);
+                                break;
+                        }
+
                         //Take away the item
                         __instance.hasSpecialItem = false;
                         __instance.genericTimer = 0f;
@@ -1233,19 +1257,23 @@ namespace TylerKozaki.Patches
         {
             if (player.input.specialHold && player.energy > 0f)
             {
-                player.SetPlayerAnimation("StandingThrowP1");
                 PlaySFXLooping(chargeSfx, 1f);
                 player.genericTimer += FPStage.deltaTime;
                 player.energyRecoverRate = 0f;
                 throwCharge += 0.5f * FPStage.deltaTime;
                 player.energy -= 1f * FPStage.deltaTime;
 
+                if (player.input.left) player.direction = FPDirection.FACING_LEFT;
+                else if (player.input.right) player.direction = FPDirection.FACING_RIGHT;
+
                 if (player.onGround)
                 {
+                    player.SetPlayerAnimation("StandingThrowP1");
                     if (player.input.jumpPress)
                     {
                         player.genericTimer = 0f;
                         player.Action_SoftJump();
+                        player.SetPlayerAnimation("ChargeJump");
                     }
                     else if (player.onGrindRail)
                     {
@@ -1260,6 +1288,11 @@ namespace TylerKozaki.Patches
                 }
                 else
                 {
+                    if (player.velocity.y > 0f)
+                    {
+                        player.SetPlayerAnimation("ChargeJump");
+                    }
+                    else player.SetPlayerAnimation("ChargeJump_Loop");
                     ApplyAirForces(player, true);
                     ApplyGravityForce(player);
                     RotatePlayerUpright(player);
@@ -1290,7 +1323,6 @@ namespace TylerKozaki.Patches
             {
                 StopSFXLooping();
                 player.energyRecoverRate = energyRecoveryBaseSpeed;
-                player.SetPlayerAnimation("StandingThrowP2");
                 if (throwCharge > 25f)
                 {
                     Action_Tyler_ChargedShotFire();
@@ -1301,11 +1333,12 @@ namespace TylerKozaki.Patches
                 }
                 if (player.onGround)
                 {
+                    player.SetPlayerAnimation("StandingThrowP2");
                     player.state = new FPObjectState(player.State_Ground);
                 }
                 else
                 {
-                    player.SetPlayerAnimation("Jumping", 0.25f, 0.25f, false, true);
+                    player.SetPlayerAnimation("AirThrow", null, null, false, true);
                     player.state = new FPObjectState(player.State_InAir);
                 }
             }
