@@ -138,7 +138,6 @@ namespace TylerKozaki
             harmony.PatchAll(typeof(PatchMenuWorldMap));
             harmony.PatchAll(typeof(PatchProjectileBasic));
             harmony.PatchAll(typeof(PatchItemFuel));
-            harmony.PatchAll(typeof(PatchZLBaseballFlyer));
         }
     }
 }
