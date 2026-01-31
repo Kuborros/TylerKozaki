@@ -1,6 +1,4 @@
 ﻿using HarmonyLib;
-using System.Linq;
-using System.Security.Policy;
 using UnityEngine;
 
 namespace TylerKozaki.Patches
@@ -32,8 +30,8 @@ namespace TylerKozaki.Patches
 
 
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(FPHudMaster),"LateUpdate",MethodType.Normal)]
-        static void PatchFPHudMasterLateUpdate(FPHudMaster __instance, ref Vector3 ___hudEnergyBarScale,ref GameObject ___energyBarGraphic, FPPlayer ___targetPlayer,ref SpriteRenderer ___hudBaseSprite)
+        [HarmonyPatch(typeof(FPHudMaster), "LateUpdate", MethodType.Normal)]
+        static void PatchFPHudMasterLateUpdate(FPHudMaster __instance, ref Vector3 ___hudEnergyBarScale, ref GameObject ___energyBarGraphic, FPPlayer ___targetPlayer, ref SpriteRenderer ___hudBaseSprite)
         {
             if (___targetPlayer.characterID == TylerKozaki.currentTylerID)
             {
@@ -85,7 +83,7 @@ namespace TylerKozaki.Patches
             //Boost
             if (player.energy >= 100)
             {
-                    guardText = "<c=energy>Umbral Boost</c>";
+                guardText = "<c=energy>Umbral Boost</c>";
             }
 
             //Mid-air

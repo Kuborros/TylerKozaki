@@ -10,7 +10,6 @@ namespace TylerKozaki.Patches
     {
 
         public static FPPlayer player;
-        //public static PlayerShadow playerShadow;
 
         public static AudioClip kunaiSfx;
         public static AudioClip bladeThrowSfx;
@@ -21,7 +20,6 @@ namespace TylerKozaki.Patches
         internal static float jumpMultiplier;
         internal static float speedMultiplier;
 
-        private static float attackCharge = 0f;
         private static float wallClingTimer = 0f;
         private static float energyRecoveryBaseSpeed = 0.4f;
 
@@ -35,7 +33,6 @@ namespace TylerKozaki.Patches
 
         internal static bool burnoutState = false;
         internal static bool combo = false;
-        internal static bool talkedAlready = false;
 
         private static int kunaiAngle = 0;
         private static int lastDamageType;

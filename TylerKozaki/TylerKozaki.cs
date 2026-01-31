@@ -1,7 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using FP2Lib.Badge;
-using FP2Lib.Item;
 using FP2Lib.Player;
 using FP2Lib.Vinyl;
 using HarmonyLib;
@@ -12,7 +11,8 @@ using UnityEngine;
 
 namespace TylerKozaki
 {
-    [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+    [BepInPlugin("kubo.plugins.fp2.playabletyler", "TylerKozaki", "1.0.0")]
+    [BepInDependency("000.kuborro.libraries.fp2.fp2lib")]
     public class TylerKozaki : BaseUnityPlugin
     {
         internal static ManualLogSource logSource;
@@ -77,10 +77,10 @@ namespace TylerKozaki
                 Name = "Tyler",
                 TutorialScene = "Tutorial1",
                 characterType = "SHADOW Type",
-                skill1 = "Umbral Boost",
+                skill1 = "Kunai Throw",
                 skill2 = "Tail Spin",
                 skill3 = "Attack",
-                skill4 = "Guard",
+                skill4 = "Umbral Boost",
                 airshipSprite = 1,
                 useOwnCutsceneActivators = false,
                 enabledInAventure = false,

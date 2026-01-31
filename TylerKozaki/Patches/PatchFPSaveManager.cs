@@ -9,7 +9,7 @@ namespace TylerKozaki.Patches
         [HarmonyPatch(typeof(FPSaveManager), "GameClearBadgeCheck", MethodType.Normal)]
         static void PatchFPSaveManagerCheckEnd()
         {
-            //Lighting game complete badge
+            //Tyler game complete badge
             if (FPSaveManager.character == TylerKozaki.currentTylerID)
                 BadgeHandler.UnlockBadge("kubo.tylercomplete");
         }
@@ -18,7 +18,7 @@ namespace TylerKozaki.Patches
         [HarmonyPatch(typeof(FPSaveManager), "BadgeCheck", MethodType.Normal)]
         static void PatchFPSaveManagerBadgeCheck(int badgeID, int variable = 0)
         {
-            //Lighting par time badges.
+            //Tyler par time badges.
             if (FPSaveManager.character == TylerKozaki.currentTylerID)
             {
                 //Par time one stage

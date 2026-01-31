@@ -6,6 +6,10 @@ namespace TylerKozaki.Objects
     {
         public static int classID = -1;
 
+        //He aint really cooked or done.
+        //To be finished if adventure mode for Tyler ever becomes a thing.
+        //Following sets up a basic boss without any moves.
+
         [Header("Boss Settings")]
         public FPHitBox walkRange;
         public float pursuitRange;

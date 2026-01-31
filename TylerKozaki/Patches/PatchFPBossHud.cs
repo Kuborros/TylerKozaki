@@ -14,7 +14,7 @@ namespace TylerKozaki.Patches
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(FPBossHud), "LateUpdate", MethodType.Normal)]
-        static void PatchFPBossHudLateUpdate(FPBossHud __instance,bool __state, FPBaseEnemy[] ___weakpointCheck)
+        static void PatchFPBossHudLateUpdate(FPBossHud __instance, bool __state, FPBaseEnemy[] ___weakpointCheck)
         {
             if (__instance.targetBoss == null || __state || !(__instance.targetBoss.health <= 0f))
             {
