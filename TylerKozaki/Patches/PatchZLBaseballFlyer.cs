@@ -1,18 +1,27 @@
 ﻿using HarmonyLib;
+using System.Collections.Generic;
+using System.Reflection.Emit;
 
 namespace TylerKozaki.Patches
 {
     internal class PatchZLBaseballFlyer
     {
-        [HarmonyPostfix]
+        //Should not affect others too much? We use the other hitbox anyways...
+        [HarmonyTranspiler]
         [HarmonyPatch(typeof(ZLBaseballFlyer), "State_Target", MethodType.Normal)]
-        static void PatchZLBaseballFlyerTarget(ref FPPlayer ___targetPlayer)
+        [HarmonyPatch(typeof(ZLBaseballFlyer), "State_Flying", MethodType.Normal)]
+        static IEnumerable<CodeInstruction> ZLBaseballFlyerStateTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            if (___targetPlayer == null) return;
-            if (___targetPlayer.characterID == TylerKozaki.currentTylerID)
+            List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
+            for (var i = 1; i < codes.Count; i++)
             {
-                ___targetPlayer.SetPlayerAnimation("Hide");
+                if (codes[i].opcode == OpCodes.Ldstr && codes[i - 1].opcode == OpCodes.Ldfld)
+                {
+                    if ((string)codes[i].operand == "Rolling")
+                        codes[i].operand = "Hide";
+                }
             }
+            return codes;
         }
     }
 }
