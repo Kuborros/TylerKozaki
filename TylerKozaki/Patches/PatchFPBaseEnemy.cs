@@ -2,11 +2,23 @@
 
 namespace TylerKozaki.Patches
 {
+
+    internal enum BossLastHitType
+    {
+        Generic,
+        Boost,
+        TailSpin,
+        Kunai
+    }
+
     internal class PatchFPBaseEnemy
     {
+        //Horrible hack v2
+        internal static BossLastHitType lastHit = BossLastHitType.Generic;
+
         [HarmonyPrefix]
         [HarmonyPatch(typeof(FPBaseEnemy), "DamageCheck_FPPlayer", MethodType.Normal)]
-        static void PatchBaseEnemyDamageCheckFPPlayer(ref FPBaseObject objectRef, ref FPBaseEnemy __instance)
+        static void PatchBaseEnemyDamageCheckFPPlayer(FPBaseObject objectRef, ref FPBaseEnemy __instance)
         {
             if (FPSaveManager.character == TylerKozaki.currentTylerID)
             {
@@ -24,11 +36,14 @@ namespace TylerKozaki.Patches
                             if (fPPlayer.state == new FPObjectState(PatchFPPlayer.State_Tyler_BoostP1) || fPPlayer.state == new FPObjectState(PatchFPPlayer.State_Tyler_BoostP2))
                             {
                                 __instance.badgeLilac = true;
+                                lastHit = BossLastHitType.Boost;
                             }
                             else if (fPPlayer.state == new FPObjectState(PatchFPPlayer.State_Tyler_TailSpin))
                             {
                                 __instance.badgeCarol = true;
+                                lastHit = BossLastHitType.TailSpin;
                             }
+                            else lastHit = BossLastHitType.Generic;
                         }
                     }
                 }
@@ -36,7 +51,7 @@ namespace TylerKozaki.Patches
         }
         [HarmonyPrefix]
         [HarmonyPatch(typeof(FPBaseEnemy), "DamageCheck_ProjectileBasic", MethodType.Normal)]
-        static void PatchBaseEnemyDamageCheckProjectileBasic(ref FPBaseObject objectRef, ref FPBaseEnemy __instance)
+        static void PatchBaseEnemyDamageCheckProjectileBasic(FPBaseObject objectRef, ref FPBaseEnemy __instance)
         {
             if (FPSaveManager.character == TylerKozaki.currentTylerID) {
                 if (FPStage.ConfirmClassWithPoolTypeID(typeof(ProjectileBasic), ProjectileBasic.classID))
@@ -60,7 +75,9 @@ namespace TylerKozaki.Patches
                                         || projectileBasic.animator.GetCurrentAnimatorStateInfo(0).IsName("BombThrow"))
                                     {
                                         __instance.badgeMilla = true;
+                                        lastHit = BossLastHitType.Kunai;
                                     }
+                                    else lastHit = BossLastHitType.Generic;
                                 }
                             }
                         }
