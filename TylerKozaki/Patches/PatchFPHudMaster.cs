@@ -75,6 +75,12 @@ namespace TylerKozaki.Patches
                 return;
             }
 
+            //Maybe not replace the guide when in BFF2000 mode, or Airship sections.
+            if (player.displayMoveAttack == "Spark Shot" || player.displayMoveAttack.Contains("Missiles") || FPStage.stageNameString == "Bakunawa Chase")
+            {
+                return;
+            }
+
             string jumpText = "Jump";
             string basicAttackText = "Attack";
             string specialAttackText = "<c=energy>Kunai Throw</c>";
