@@ -196,6 +196,7 @@ namespace TylerKozaki.Patches
             else if (!player.input.down && !player.input.up && !player.input.jumpPress && player.state != new FPObjectState(State_Tyler_TailSwipe) &&
             ((player.state != new FPObjectState(State_Tyler_AttackHold) && ((FPSaveManager.holdToAttack >= 1 && player.input.attackHold) || player.input.attackPress)) || player.input.attackPress))
             {
+                player.voiceTimer = 0f;
                 player.genericTimer = 0f;
                 player.idleTimer = 0f - player.fightStanceTime;
                 if (player.nextAttack > 1 && player.nextAttack < 4)
@@ -429,7 +430,7 @@ namespace TylerKozaki.Patches
             chargeShot.explodeTimer = 150f;
             chargeShot.destroyOnHit = false;
             chargeShot.explodeType = FPExplodeType.WHITEBURST;
-            player.Action_PlayVoice(player.vaExtra[3]);
+            player.Action_PlayVoice(player.vaExtra[Random.Range(3,5)]);
 
             chargeShot.animator = chargeShot.GetComponent<Animator>();
             chargeShot.animator.runtimeAnimatorController = chargeShot.animatorController;
@@ -755,13 +756,21 @@ namespace TylerKozaki.Patches
                     if (player.nextAttack > 1 && player.nextAttack < 4)
                     {
                         player.SetPlayerAnimation("EclipseCombo" + player.nextAttack);
-                        player.Action_PlayVoiceArray("Attack");
+                        if (player.voiceTimer <= 0)
+                        {
+                            player.Action_PlayVoiceArray("Attack");
+                            player.voiceTimer = 50f;
+                        }
                         player.nextAttack++;
                     }
                     else
                     {
                         player.SetPlayerAnimation("EclipseCombo1");
-                        player.Action_PlayVoiceArray("Attack");
+                        if (player.voiceTimer <= 0)
+                        {
+                            player.Action_PlayVoiceArray("Attack");
+                            player.voiceTimer = 30f;
+                        }
                         player.nextAttack = 2;
                     }
                 }
@@ -1195,7 +1204,7 @@ namespace TylerKozaki.Patches
                     RotatePlayerUpright(player);
                 }
                 player.SetPlayerAnimation("ReviveSurge");
-                player.Action_PlayVoice(player.vaRevive[Random.Range(0, player.vaRevive.Length)]);
+                player.Action_PlayVoice(player.vaExtra[Random.Range(5, 8)]);
                 player.transform.GetChild(0).gameObject.SetActive(true);
                 player.genericTimer += FPStage.deltaTime;
             }
@@ -1313,10 +1322,6 @@ namespace TylerKozaki.Patches
                             player.velocity.y = -4.5f;
                         }
                     }
-                }
-                if (throwCharge > 25f && player.voiceTimer < 30)
-                {
-                    player.Action_PlayVoice(player.vaExtra[2]);
                 }
             }
             else
