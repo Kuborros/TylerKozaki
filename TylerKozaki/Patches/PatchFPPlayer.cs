@@ -22,6 +22,7 @@ namespace TylerKozaki.Patches
 
         private static float wallClingTimer = 0f;
         private static float energyRecoveryBaseSpeed = 0.4f;
+        private static float ghostTimer = 0f;
 
         internal static float overCharge = 0f;
         internal static float throwCharge = 0f;
@@ -33,6 +34,7 @@ namespace TylerKozaki.Patches
 
         internal static bool burnoutState = false;
         internal static bool combo = false;
+        internal static bool chargeSpark = false;
 
         private static int kunaiAngle = 0;
         private static int lastDamageType;
@@ -250,6 +252,7 @@ namespace TylerKozaki.Patches
                 player.genericTimer = 0f;
                 throwDelay = 30f;
                 chargeThrowDelay = 50f;
+                chargeSpark = false;
                 player.state = new FPObjectState(State_Tyler_AttackHold);
                 player.idleTimer = -player.fightStanceTime;
                 player.Action_StopSound();
@@ -930,6 +933,7 @@ namespace TylerKozaki.Patches
             boostFlame.parentObject = player;
             boostFlame.spriteRenderer.sprite = boostFlame.defaultSprite;
             player.genericTimer = 0f;
+            ghostTimer = 0f;
             player.Action_PlaySoundUninterruptable(player.sfxBoostLaunch);
             player.state = State_Tyler_BoostP2;
             player.Action_PlayVoiceArray("HardAttack");
@@ -940,6 +944,7 @@ namespace TylerKozaki.Patches
         internal static void State_Tyler_BoostP2()
         {
             player.invincibilityTime = Mathf.Max(player.invincibilityTime, 15f);
+            ghostTimer += FPStage.deltaTime;
             if (player.genericTimer < 34f)
             {
                 if (player.hitStun <= 0f)
@@ -947,6 +952,13 @@ namespace TylerKozaki.Patches
                     player.SetPlayerAnimation("Boost_Loop");
                     player.energy -= 3.4f * FPStage.deltaTime;
                     player.genericTimer += FPStage.deltaTime;
+
+                    if (ghostTimer >= 2.5f)
+                    {
+                        Ghost();
+                        ghostTimer = 0f;
+                    }
+
                     if (player.hitStun <= 0f)
                     {
                         if (player.onGround)
@@ -1295,6 +1307,14 @@ namespace TylerKozaki.Patches
                 if (player.input.left) player.direction = FPDirection.FACING_LEFT;
                 else if (player.input.right) player.direction = FPDirection.FACING_RIGHT;
 
+                if (!chargeSpark && throwCharge >= 25f)
+                {
+                    player.flashTime = 5f;
+                    player.Action_PlaySound(player.sfxMillaShieldSummon);
+                    chargeSpark = true;
+                }
+
+
                 if (player.onGround)
                 {
                     player.SetPlayerAnimation("StandingThrowP1");
@@ -1494,8 +1514,8 @@ namespace TylerKozaki.Patches
 
         private static void Ghost()
         {
-            Color start = new Color(1f, 1f, 1f, 0.5f);
-            Color end = new Color(1f, 1f, 1f, 0f);
+            Color start = new Color(0f, 0f, 0f, 0.8f);
+            Color end = new Color(0f, 0f, 0f, 0f);
             SpriteGhost spriteGhost = (SpriteGhost)FPStage.CreateStageObject(SpriteGhost.classID, player.transform.position.x, player.transform.position.y);
             spriteGhost.transform.rotation = player.transform.rotation;
             spriteGhost.SetUp(player.gameObject.GetComponent<SpriteRenderer>().sprite, start, end, 0.5f, 3f);
@@ -1635,6 +1655,18 @@ namespace TylerKozaki.Patches
             {
                 if (burnoutState) __result *= 2;
             }
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(FPPlayer), "State_InAir", MethodType.Normal)]
+        [HarmonyPatch(typeof(FPPlayer), "State_Ground", MethodType.Normal)]
+        [HarmonyPatch(typeof(FPPlayer), "State_Crouching", MethodType.Normal)]
+        internal static void NoAuraFarming()
+        {
+            if (FPSaveManager.character != TylerKozaki.currentTylerID) return;
+
+            if (player.transform.GetChild(0).gameObject.activeSelf)
+                player.transform.GetChild(0).gameObject.SetActive(false);
         }
 
         //Reverse Patches
