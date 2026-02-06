@@ -140,6 +140,7 @@ namespace TylerKozaki
             harmony.PatchAll(typeof(PatchItemFuel));
             harmony.PatchAll(typeof(PatchFuelIcons));
             harmony.PatchAll(typeof(PatchFPLadderTrigger));
+            harmony.PatchAll(typeof(PatchBoostExplosion));
         }
     }
 }

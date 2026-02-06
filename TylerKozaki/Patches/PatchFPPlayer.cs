@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using System.Reflection;
+using TylerKozaki.Objects;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -1603,6 +1604,11 @@ namespace TylerKozaki.Patches
                 overCharge -= energyRecoveryBaseSpeed * FPStage.deltaTime;
                 player.energy = 0f;
                 ___energyRecoverRateMultiplier = 0;
+
+                if (Mathf.Repeat(FPStage.platformTimer, (10f - overCharge * 5f) * 5f + 4f) > (10f - overCharge * 5f) * 5f + 3f && FPStage.ConfirmClassWithPoolTypeID(typeof(Smokey), Smokey.classID))
+                {
+                    FPStage.CreateStageObject(Smokey.classID, __instance.position.x + Random.Range(-24f, 24f), __instance.position.y + Random.Range(-32f, 32f));
+                }
             }
             if (overCharge < 0)
             {
@@ -1619,6 +1625,20 @@ namespace TylerKozaki.Patches
             if (FPSaveManager.character == TylerKozaki.currentTylerID)
             {
                 player = __instance;
+
+                //Reset static variables
+                //Avoids very specific edge cases when restarting the level in a funny way
+                wallClingTimer = 0f;
+                ghostTimer = 0f;
+                overCharge = 0f;
+                throwCharge = 0f;
+                throwDelay = 0f;
+                chargeThrowDelay = 0f;
+                burnoutState = false;
+                combo = false;
+                chargeSpark = false;
+                kunaiAngle = 0;
+
                 //Append 2 extra spare audio channels
                 //Channel 4 - Looping SFX
                 //Channel 5 - Things normal game logic should not mess with
@@ -1644,6 +1664,16 @@ namespace TylerKozaki.Patches
 
                 //Potion seller related fix
                 energyRecoveryBaseSpeed = __instance.energyRecoverRate;
+
+                //Create and spawn Smokey (effect used for burnout).
+                GameObject pfSmokey = new GameObject();
+                pfSmokey.name = "Smokey Prime";
+                pfSmokey.layer = 8; //FG Plane A
+                pfSmokey.AddComponent<Animator>();
+                pfSmokey.AddComponent<SpriteRenderer>();
+                pfSmokey.AddComponent<Smokey>();
+                pfSmokey.GetComponent<Animator>().runtimeAnimatorController = TylerKozaki.dataBundle.LoadAsset<RuntimeAnimatorController>("SmokeyAnimator");
+                GameObject.Instantiate<GameObject>(pfSmokey);
             }
         }
 

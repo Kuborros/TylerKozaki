@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace TylerKozaki.Patches
 {
@@ -38,7 +39,7 @@ namespace TylerKozaki.Patches
                 ___hudEnergyBarScale.x = Mathf.Min(___targetPlayer.energy * 0.011f, 1.1f);
                 ___energyBarGraphic.transform.localScale = ___hudEnergyBarScale;
 
-                if (___targetPlayer.hasSpecialItem)
+                if (___targetPlayer.hasSpecialItem && SceneManager.GetActiveScene().name != "Battlesphere_HomeRun")
                 {
                     familyBraceletIcon.GetComponent<FPHudDigit>().SetDigitValue(1);
                 }
