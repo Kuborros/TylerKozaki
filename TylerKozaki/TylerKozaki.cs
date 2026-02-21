@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace TylerKozaki
 {
-    [BepInPlugin("kubo.plugins.fp2.playabletyler", "TylerKozaki", "1.0.0")]
+    [BepInPlugin("kubo.plugins.fp2.playabletyler", "TylerKozaki", "1.0.1")]
     [BepInDependency("000.kuborro.libraries.fp2.fp2lib")]
     public class TylerKozaki : BaseUnityPlugin
     {

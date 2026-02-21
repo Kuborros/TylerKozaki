@@ -1658,6 +1658,10 @@ namespace TylerKozaki.Patches
                 bladeThrowProjectile = TylerKozaki.dataBundle.LoadAsset<RuntimeAnimatorController>("ThrownBlade");
                 umbralBombProjectile = TylerKozaki.dataBundle.LoadAsset<RuntimeAnimatorController>("UmbralBomb");
 
+                //Spooky ghost
+                GameObject spooky = TylerKozaki.dataBundle.LoadAsset<GameObject>("Tyler Dash Ghost");
+                GameObject.Instantiate(spooky);
+
                 //Set up lower health
                 //Potion Seller will then bump it back to 6 and hopefully won't break in a thousand different ways.
                 __instance.healthMax--;
