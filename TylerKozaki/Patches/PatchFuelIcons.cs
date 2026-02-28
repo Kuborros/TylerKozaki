@@ -13,7 +13,7 @@ namespace TylerKozaki.Patches
         static void PatchSetDigitValue(ref Sprite[] ___digitFrames, ref FPHudDigit __instance)
         {
             //Do we even have frames and if we are playing as Tyler
-            if (___digitFrames != null && ___digitFrames != null && SceneManager.GetActiveScene().name != "MainMenu")
+            if (___digitFrames != null && __instance != null && SceneManager.GetActiveScene().name != "MainMenu")
             {
                 if (___digitFrames.Length > 40 && FPSaveManager.character == TylerKozaki.currentTylerID)
                 {
