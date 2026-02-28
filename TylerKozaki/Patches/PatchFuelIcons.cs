@@ -1,6 +1,7 @@
 ﻿using FP2Lib.Player;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace TylerKozaki.Patches
 {
@@ -12,17 +13,20 @@ namespace TylerKozaki.Patches
         static void PatchSetDigitValue(ref Sprite[] ___digitFrames, ref FPHudDigit __instance)
         {
             //Do we even have frames and if we are playing as Tyler
-            if (___digitFrames != null && ___digitFrames.Length > 40 && FPSaveManager.character == TylerKozaki.currentTylerID)
+            if (___digitFrames != null && ___digitFrames != null && SceneManager.GetActiveScene().name != "MainMenu")
             {
-                //Does frame one exist (it sometimes doesnt just to spite you)
-                if (___digitFrames[1] != null && ___digitFrames[12] != null)
+                if (___digitFrames.Length > 40 && FPSaveManager.character == TylerKozaki.currentTylerID)
                 {
-                    //Check if we are in Item page, and the sprite is still Carol's
-                    if (___digitFrames[12].name == "powerup_start_carol")
+                    //Does frame one exist (it sometimes doesnt just to spite you)
+                    if (___digitFrames[1] != null && ___digitFrames[12] != null)
                     {
-                        //If so replace it
-                        ___digitFrames[12] = PlayerHandler.currentCharacter.itemFuel;
-                        if (__instance.digitValue == 12) __instance.SetDigitValue(12);
+                        //Check if we are in Item page, and the sprite is still Carol's
+                        if (___digitFrames[12].name == "powerup_start_carol")
+                        {
+                            //If so replace it
+                            ___digitFrames[12] = PlayerHandler.currentCharacter.itemFuel;
+                            if (__instance.digitValue == 12) __instance.SetDigitValue(12);
+                        }
                     }
                 }
             }
