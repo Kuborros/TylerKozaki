@@ -101,6 +101,7 @@ namespace TylerKozaki
                 itemFuel = dataBundle.LoadAsset<Sprite>("Wolf dragon pendent"),
                 worldMapPauseSprite = dataBundle.LoadAsset<Sprite>("TylerPauseIdle"),
                 zaoBaseballSprite = dataBundle.LoadAsset<Sprite>("Tyler's baseball hold on sprite"),
+                bfImpaleSprite = dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's defeated")[7],
                 livesIconAnim = dataBundle.LoadAssetWithSubAssets<Sprite>("Tyler's lifes counter icon"),
                 sagaBlock = dataBundle.LoadAsset<RuntimeAnimatorController>("SagaTyler"),
                 sagaBlockSyntax = dataBundle.LoadAsset<RuntimeAnimatorController>("Saga2Tyler"),
@@ -141,7 +142,6 @@ namespace TylerKozaki
             harmony.PatchAll(typeof(PatchFuelIcons));
             harmony.PatchAll(typeof(PatchFPLadderTrigger));
             harmony.PatchAll(typeof(PatchBoostExplosion));
-            harmony.PatchAll(typeof(PatchBFSyntaxHunt));
         }
     }
 }
