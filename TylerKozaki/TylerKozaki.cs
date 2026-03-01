@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace TylerKozaki
 {
-    [BepInPlugin("kubo.plugins.fp2.playabletyler", "TylerKozaki", "1.0.1")]
+    [BepInPlugin("kubo.plugins.fp2.playabletyler", "TylerKozaki", "1.0.2")]
     [BepInDependency("000.kuborro.libraries.fp2.fp2lib")]
     public class TylerKozaki : BaseUnityPlugin
     {
@@ -141,6 +141,7 @@ namespace TylerKozaki
             harmony.PatchAll(typeof(PatchFuelIcons));
             harmony.PatchAll(typeof(PatchFPLadderTrigger));
             harmony.PatchAll(typeof(PatchBoostExplosion));
+            harmony.PatchAll(typeof(PatchBFSyntaxHunt));
         }
     }
 }
